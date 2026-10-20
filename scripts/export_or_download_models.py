@@ -9,8 +9,6 @@ Utility Script: Export or Download Standalone ONNX Vision Models for S1stem.
 import os
 from pathlib import Path
 import numpy as np
-import onnx
-from onnx import helper, TensorProto
 
 
 def generate_local_vision_onnx(output_path: str = "models/s1stem_vision_encoder.onnx", embedding_dim: int = 512) -> str:
@@ -28,6 +26,15 @@ def generate_local_vision_onnx(output_path: str = "models/s1stem_vision_encoder.
       - Gemm (64 -> embedding_dim) -> [1, embedding_dim]
     Output: [1, embedding_dim] (float32 feature embedding)
     """
+    try:
+        import onnx
+        from onnx import helper, TensorProto
+    except ImportError as exc:
+        raise ImportError(
+            "The 'onnx' package is required to synthesize ONNX models. "
+            "Please install it using 'pip install onnx' or 'pip install -e .[test]'."
+        ) from exc
+
     out_dir = Path(output_path).parent
     out_dir.mkdir(parents=True, exist_ok=True)
 
