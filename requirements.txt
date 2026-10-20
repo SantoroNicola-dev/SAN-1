@@ -1,0 +1,16 @@
+# Core ONNX Runtime & Inference
+onnxruntime>=1.19.0
+numpy>=1.26.0
+pillow>=10.0.0
+tokenizers>=0.20.0
+rapidocr-onnxruntime>=1.3.0
+
+# HTTP Server & API Microservice
+fastapi>=0.110.0
+uvicorn>=0.29.0
+python-multipart>=0.0.9
+pydantic>=2.0.0
+
+# Testing & Quality
+pytest>=8.0.0
+httpx>=0.27.0

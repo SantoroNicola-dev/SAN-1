@@ -1,0 +1,201 @@
+{
+  "version": "1.4",
+  "name": "Vision Guardrail Policy Specification",
+  "taxonomy": [
+    {
+      "id": "ALLOWED_CLOSEUP_SELFIE",
+      "label": "Close-up Selfie",
+      "description": "a natural close-up selfie photograph of a real human person, smartphone camera portrait, genuine selfie photo of a face",
+      "is_allowed": true,
+      "code": null,
+      "reason": null,
+      "hint": null
+    },
+    {
+      "id": "ALLOWED_GROUP_SELFIE",
+      "label": "Group Selfie",
+      "description": "a group selfie photo of multiple people, friends or family smiling posing together front camera wefie",
+      "is_allowed": true,
+      "code": null,
+      "reason": null,
+      "hint": null
+    },
+    {
+      "id": "BLOCKED_FULL_BODY",
+      "label": "Full Body / Distant Person",
+      "description": "a photo of a person or people standing far away, full body view, pedestrian walking, street scene with person, outfit photo, distant person outdoors",
+      "is_allowed": false,
+      "code": "DISTANCE_TOO_FAR",
+      "reason": "The subject is framed full-body or positioned too far from the camera.",
+      "hint": "Move closer to the camera to capture a clear close-up selfie."
+    },
+    {
+      "id": "BLOCKED_LANDSCAPE",
+      "label": "Landscape or Scenery",
+      "description": "a scenic landscape photograph of nature, trees, sky, mountains, outdoor scenery or building architecture without people",
+      "is_allowed": false,
+      "code": "NO_FACE_LANDSCAPE",
+      "reason": "The image depicts a landscape, room, building, or scenic view without human faces in the foreground.",
+      "hint": "Frame your face in the foreground or take a group selfie."
+    },
+    {
+      "id": "BLOCKED_OBJECT",
+      "label": "Object, Vehicle, or Animal",
+      "description": "a photograph of a flower, floral blossom, petal, green plant, foliage, car, automobile, vehicle, truck, motorcycle, inanimate object, food, item, merchandise, or animal",
+      "is_allowed": false,
+      "code": "OBJECT_OR_ANIMAL",
+      "reason": "The image depicts an inanimate object, vehicle, plant, food, pet, or still life.",
+      "hint": "Do not photograph objects or vehicles. A real selfie of your face is required."
+    },
+    {
+      "id": "BLOCKED_DOCUMENT",
+      "label": "Document or Screenshot",
+      "description": "a pure paper invoice, store receipt, document with lines of text, printed sheet, form, book page, or table with numbers without human people",
+      "is_allowed": false,
+      "code": "DOCUMENT_OR_SCREENSHOT",
+      "reason": "The image appears to be a paper document, identity card, digital screenshot, or text page.",
+      "hint": "Do not upload documents or screenshots. Capture a live photo with your camera."
+    },
+    {
+      "id": "BLOCKED_ART_AVATAR",
+      "label": "Artwork or Digital Avatar",
+      "description": "a digital drawing, graphic illustration, anime cartoon artwork, 2D manga sketch, 3D CGI video game render, fictional animated character",
+      "is_allowed": false,
+      "code": "NON_REAL_PERSON",
+      "reason": "The image is a graphic illustration, drawing, anime, 3D render, or artificial avatar.",
+      "hint": "Please upload an authentic live photograph of yourself."
+    },
+    {
+      "id": "BLOCKED_BLURRY",
+      "label": "Blurry or Dark Image",
+      "description": "an extremely blurry unreadable out-of-focus image, severe motion blur smear, dark unintelligible blank noise graphic without face",
+      "is_allowed": false,
+      "code": "UNRECOGNIZABLE_QUALITY",
+      "reason": "The image is excessively dark, blurry, out-of-focus, or too low in resolution.",
+      "hint": "Take a new selfie in a well-lit environment while keeping the camera steady."
+    },
+    {
+      "id": "BLOCKED_MEME",
+      "label": "Internet Meme or Satirical Image",
+      "description": "an internet meme, funny meme image, image macro with bold white impact font text caption overlay, viral social media meme template, satirical cartoon meme, political meme, humorous joke graphic with text, shitpost meme, reaction face meme photo with caption, internet humor graphic, twitter meme screenshot, reddit meme post",
+      "is_allowed": false,
+      "code": "MEME_NOT_ALLOWED",
+      "reason": "The image is an internet meme, satirical image macro, or viral social media post.",
+      "hint": "Do not upload memes or satirical images. An authentic, real photograph is required."
+    },
+    {
+      "id": "BLOCKED_OFFENSIVE_GESTURE",
+      "label": "Offensive or Vulgar Gesture",
+      "description": "a photograph of a person showing a rude offensive vulgar gesture, flipping the middle finger, extending the middle finger, flipping the bird, bras d'honneur forearm jerk umbrella gesture, gesto dell'ombrello, offensive horned fingers mano cornuta, the fig sign mano a fico thumb between fingers, backwards reverse V sign palm facing inward two-finger salute up yours gesture, cut-throat slit throat death threat hand gesture, wanker masturbation jerk off hand gesture, vulgar chin flick la barbe dismissive gesture, rude shocker gesture, offensive hand sign",
+      "is_allowed": false,
+      "code": "OFFENSIVE_GESTURE",
+      "reason": "The image depicts an offensive, vulgar, or threatening gesture (middle finger, forearm jerk, horns, fig sign, reverse V sign, chin flick, or throat slit).",
+      "hint": "Take a spontaneous and respectful selfie without making offensive, vulgar, or threatening gestures."
+    }
+  ],
+  "benign_anchors": {
+    "peace_pose": "a person showing a peace sign, victory sign with two fingers, V sign, friendly hand pose in a selfie",
+    "clean_selfie": "a clean close-up selfie portrait photograph of a smiling human face",
+    "thumbs_up_pose": "a person showing a positive thumbs up gesture, friendly thumb up hand pose, approving thumbs up in a selfie",
+    "benign_obj": "a photograph of a flower, green plant, car, automobile, vehicle, truck, motorcycle, furniture, food, merchandise, animal",
+    "benign_blur": "a dark blurry out-of-focus grainy low-light underexposed photograph or low resolution image, blank graphic",
+    "benign_doc": "a paper document, invoice, receipt, certificate, table with numbers, printed text sheet, book page",
+    "benign_scene": "a scenic landscape photograph of nature, trees, sky, mountains, outdoor scenery or building architecture without people"
+  },
+  "veto_rules": [
+    {
+      "id": "BLOCKED_EXPLICIT",
+      "label": "Explicit Sexual Content / Nudity",
+      "code": "EXPLICIT_SEXUAL_CONTENT",
+      "reason": "The image contains prohibited adult content, nudity, sexual exposure, erotic posing, or explicit elements.",
+      "hint": "Upload only a policy-compliant selfie without nudity or adult content.",
+      "target_prompt": "an explicit adult photograph, erotic pornography, nudity, exposed bare breasts, nipples, buttocks, bare ass, genitals, vagina, penis, sex act, blowjob, sucking dick, oral sex, sexual intercourse, panties, upskirt, lingerie, suggestive sensual erotic pose, flashing tits in public, exhibitionist, woman peeing outdoors, urination, flashing genitals, hentai anime erotica, bdsm fetish, sex toy, masturbation",
+      "threshold": 0.235,
+      "contrast_anchors": ["benign_obj", "clean_selfie", "benign_doc", "benign_scene"],
+      "margin": 0.002,
+      "anchor_margins": {
+        "clean_selfie": 0.002
+      }
+    },
+    {
+      "id": "BLOCKED_DRUGS",
+      "label": "Narcotics, Drugs, or Paraphernalia",
+      "code": "DRUGS_NARCOTICS_PROHIBITED",
+      "reason": "The image depicts illicit drugs, narcotics consumption, smoking joints or pipes, pills, powder lines, or substance abuse paraphernalia.",
+      "hint": "Do not upload images depicting narcotics, drug consumption, or drug paraphernalia.",
+      "target_prompt": "a photograph of illicit drugs, narcotics, smoking methamphetamine pipe, crack pipe, crystal meth, heroin injection needle syringe, smoking cannabis marijuana joint bong, snorting cocaine lines, ecstasy mdma party pills, lsd blotter tabs, drug paraphernalia, narcotics consumption, substance abuse",
+      "threshold": 0.230,
+      "contrast_anchors": ["benign_obj", "clean_selfie", "benign_doc", "benign_scene"],
+      "margin": 0.002,
+      "anchor_margins": {
+        "clean_selfie": 0.002
+      }
+    },
+    {
+      "id": "BLOCKED_CORPSES_ATROCITIES",
+      "label": "Corpses, War Atrocities, or Casualties",
+      "code": "CORPSES_ATROCITIES_PROHIBITED",
+      "reason": "The image depicts dead human bodies, casualties, massacre victims, war atrocities, or extreme physical violence.",
+      "hint": "Do not upload images depicting corpses, victims of atrocities, or graphic violence.",
+      "target_prompt": "a photograph of dead human bodies, corpses, concentration camp holocaust victims, pile of emaciated dead corpses, human casualty, graphic war atrocities massacre, dead victim on the ground",
+      "threshold": 0.218,
+      "contrast_anchors": ["benign_obj", "clean_selfie", "benign_doc", "benign_scene"],
+      "margin": -0.010
+    },
+    {
+      "id": "BLOCKED_OFFENSIVE_GESTURE",
+      "label": "Offensive or Vulgar Gesture",
+      "code": "OFFENSIVE_GESTURE",
+      "reason": "The image depicts an offensive, vulgar, or threatening gesture (middle finger, forearm jerk, horns, fig sign, reverse V sign, chin flick, or throat slit).",
+      "hint": "Take a spontaneous and respectful selfie without making offensive, vulgar, or threatening gestures.",
+      "target_prompt": "a photograph of a person showing a rude offensive vulgar gesture, flipping the middle finger, extending the middle finger, flipping the bird, bras d'honneur forearm jerk umbrella gesture, gesto dell'ombrello, offensive horned fingers mano cornuta, the fig sign mano a fico thumb between fingers, backwards reverse V sign palm facing inward two-finger salute up yours gesture, cut-throat slit throat death threat hand gesture, wanker masturbation jerk off hand gesture, vulgar chin flick la barbe dismissive gesture, rude shocker gesture, offensive hand sign",
+      "threshold": 0.200,
+      "contrast_anchors": ["clean_selfie"],
+      "margin": 0.005
+    },
+    {
+      "id": "BLOCKED_HATE_SYMBOL",
+      "label": "Hate Symbol, Racism, or Extremism",
+      "code": "HATE_SYMBOL_PROHIBITED",
+      "reason": "The image contains hate symbols, swastikas, extremist propaganda, racist caricatures, or prohibited hate emblems.",
+      "hint": "Remove any hate symbols, racism, or extremist propaganda from the image.",
+      "target_prompt": "a swastika nazi flag, emblem, kkk cross, racist caricature, blackface cartoon, racist ethnic slur propaganda, hate group insignia, hate symbol",
+      "threshold": 0.220,
+      "contrast_anchors": ["benign_obj", "clean_selfie", "benign_doc", "benign_scene"],
+      "margin": -0.010
+    },
+    {
+      "id": "BLOCKED_WEAPON",
+      "label": "Weapon or Dangerous Item",
+      "code": "WEAPON_DETECTED",
+      "reason": "The image depicts firearms, handguns, knives, or prohibited dangerous weapons.",
+      "hint": "Do not frame weapons or dangerous objects in your selfie.",
+      "target_prompt": "a photograph of a weapon, gun, firearm, pistol, handgun, revolver, rifle, shotgun, assault rifle, or knife",
+      "threshold": 0.210,
+      "contrast_anchors": ["clean_selfie"],
+      "margin": 0.000
+    },
+    {
+      "id": "BLOCKED_VIOLENCE",
+      "label": "Violence, Crime, or Assault",
+      "code": "VIOLENCE_CRIME_DETECTED",
+      "reason": "The image depicts physical violence, armed robbery, assault, violent crime, or terrorism.",
+      "hint": "Do not upload images depicting violent acts, crimes, or physical assaults.",
+      "target_prompt": "a CCTV surveillance camera video of an armed robbery, violent crime, shootout, terrorist attack, assault",
+      "threshold": 0.235,
+      "contrast_anchors": ["benign_obj", "clean_selfie", "benign_doc", "benign_scene"],
+      "margin": 0.0
+    },
+    {
+      "id": "BLOCKED_MEME",
+      "label": "Internet Meme or Satirical Image",
+      "code": "MEME_NOT_ALLOWED",
+      "reason": "The image contains an internet meme, text caption overlay, satirical graphic, or viral post.",
+      "hint": "Do not upload humorous or satirical memes. Upload a real and authentic selfie.",
+      "target_prompt": "an internet meme, funny meme image, image macro with bold white impact font text caption, funny satirical meme, viral internet joke, shitpost, meme template photo with text overlay, social media meme post, funny captioned meme graphic, internet humor meme, humorous image macro, funny political sign joke, satirical sign photo",
+      "threshold": 0.190,
+      "contrast_anchors": ["clean_selfie"],
+      "margin": 0.005
+    }
+  ]
+}

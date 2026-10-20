@@ -1,0 +1,28 @@
+# Git and IDE
+.git
+.gitignore
+.gitattributes
+.vscode
+.idea
+
+# Python caches and bytecode
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache
+.coverage
+htmlcov
+
+# Temporary files and logs
+*.log
+scratch
+Test
+tmp
+temp
+
+# Local environments
+.venv
+venv
+ENV
+env
