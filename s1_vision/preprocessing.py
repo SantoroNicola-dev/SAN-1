@@ -10,9 +10,11 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
-# Standard ImageNet Mean and Standard Deviation
+# Standard ImageNet / CLIP Mean and Standard Deviation
 DEFAULT_MEAN = np.array([0.485, 0.456, 0.406], dtype=np.float32).reshape(3, 1, 1)
 DEFAULT_STD = np.array([0.229, 0.224, 0.225], dtype=np.float32).reshape(3, 1, 1)
+CLIP_MEAN = np.array([0.48145466, 0.4578275, 0.40821073], dtype=np.float32).reshape(3, 1, 1)
+CLIP_STD = np.array([0.26862954, 0.26130258, 0.27577711], dtype=np.float32).reshape(3, 1, 1)
 
 
 class ImagePreprocessor:
@@ -118,4 +120,41 @@ class ImagePreprocessor:
 
         batch_tensors = [self.preprocess(img)[0] for img in image_inputs]
         return np.stack(batch_tensors, axis=0).astype(np.float32)
+
+    def preprocess_multicrop(
+        self,
+        image_input: Union[str, Path, bytes, Image.Image, np.ndarray],
+        include_quadrants: bool = True,
+        overlap_ratio: float = 0.65,
+    ) -> np.ndarray:
+        """
+        Generates a multi-region spatial batch tensor [5, 3, H, W] for a single image:
+        - Crop 0: Full global view (standard aspect-preserving resize + center crop).
+        - Crop 1: Top-Left overlapping region (65% x 65%).
+        - Crop 2: Top-Right overlapping region (65% x 65%).
+        - Crop 3: Bottom-Left overlapping region (65% x 65%).
+        - Crop 4: Bottom-Right overlapping region (65% x 65%).
+        Enables high-precision detection of secondary or off-center subjects in a single ONNX batch call.
+        """
+        pil_img = self.load_image(image_input)
+        if not include_quadrants:
+            return self.preprocess(pil_img)
+
+        w, h = pil_img.size
+        if w < 64 or h < 64:
+            return self.preprocess(pil_img)
+
+        ratio = float(np.clip(overlap_ratio, 0.50, 0.85))
+        cw = max(1, int(round(w * ratio)))
+        ch = max(1, int(round(h * ratio)))
+
+        crops = [
+            pil_img,                                    # 0: Global full view
+            pil_img.crop((0, 0, cw, ch)),               # 1: Top-Left
+            pil_img.crop((w - cw, 0, w, ch)),           # 2: Top-Right
+            pil_img.crop((0, h - ch, cw, h)),           # 3: Bottom-Left
+            pil_img.crop((w - cw, h - ch, w, h)),       # 4: Bottom-Right
+        ]
+        return self.preprocess_batch(crops)
+
 

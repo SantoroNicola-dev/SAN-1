@@ -1,0 +1,1194 @@
+{
+  "version": "2.0",
+  "name": "SAN-1 Universal Multi-Label Content Taxonomy",
+  "default_min_confidence_pct": 25.0,
+  "default_top_k": 10,
+  "calibration": {
+    "default_baseline": 0.21,
+    "default_saturation": 0.305,
+    "sigmoid_steepness": 36.0
+  },
+  "benign_anchors": {
+    "peace_pose": "a person showing a peace sign, victory sign with two fingers, V sign, friendly hand pose in a selfie",
+    "clean_selfie": "a clean close-up selfie portrait photograph of a smiling human face",
+    "thumbs_up_pose": "a person showing a positive thumbs up gesture, friendly thumb up hand pose, approving thumbs up in a selfie",
+    "benign_obj": "a photograph of a flower, green plant, car, automobile, vehicle, truck, motorcycle, furniture, food, merchandise, animal",
+    "benign_blur": "a dark blurry out-of-focus grainy low-light underexposed photograph or low resolution image, blank graphic",
+    "benign_doc": "a paper document, invoice, receipt, certificate, table with numbers, printed text sheet, book page",
+    "benign_scene": "a scenic landscape photograph of nature, trees, sky, mountains, outdoor scenery or building architecture without people",
+    "canine_domestic": "a domestic pet dog, canine puppy, hound, retriever, shepherd, poodle, terrier, bouvier, long-haired shaggy dog, man's best friend",
+    "specialized_doc": "a printed crossword puzzle, word search grid, puzzle game, test sheet, schematic diagram, technical document or blueprint on paper",
+    "measuring_utensil": "a transparent measuring cup with volume scale and graduated markings, measuring pitcher, kitchen measuring beaker, or cooking utensil"
+  },
+  "groups": [
+    {
+      "id": "people",
+      "label": "People & Portraits"
+    },
+    {
+      "id": "animals",
+      "label": "Animals & Wildlife"
+    },
+    {
+      "id": "vehicles",
+      "label": "Vehicles & Transport"
+    },
+    {
+      "id": "food_drink",
+      "label": "Food & Beverages"
+    },
+    {
+      "id": "nature_landscape",
+      "label": "Nature & Landscapes"
+    },
+    {
+      "id": "urban_indoor",
+      "label": "Architecture & Indoor Spaces"
+    },
+    {
+      "id": "objects_lifestyle",
+      "label": "Everyday Objects & Lifestyle"
+    },
+    {
+      "id": "documents_media",
+      "label": "Documents, Screens & Memes"
+    },
+    {
+      "id": "art_digital",
+      "label": "Art, Illustrations & CGI"
+    },
+    {
+      "id": "image_quality",
+      "label": "Visual Quality & Lighting"
+    },
+    {
+      "id": "sensitive_content",
+      "label": "Sensitive & Mature Visuals"
+    },
+    {
+      "id": "text_content",
+      "label": "Embedded & Semantic Text"
+    }
+  ],
+  "categories": [
+    {
+      "id": "closeup_selfie",
+      "label": "Close-up Selfie",
+      "group": "people",
+      "description": "A natural close-up selfie photograph of a real human face taken with a camera",
+      "prompts": [
+        "Close-up Selfie. a natural close-up selfie photograph of a real human person, smartphone camera portrait, genuine selfie photo of a face",
+        "a clean close-up selfie portrait photograph of a smiling human face"
+      ],
+      "baseline_threshold": 0.218,
+      "contrast_anchors": [
+        "benign_obj",
+        "benign_scene"
+      ],
+      "contrast_margin": 0.005
+    },
+    {
+      "id": "group_photo",
+      "label": "Group Photo / Wefie",
+      "group": "people",
+      "description": "A group selfie or photograph of multiple people, friends, or family together",
+      "prompts": [
+        "Group Selfie. a group selfie photo of multiple people, friends or family smiling posing together front camera wefie",
+        "two or more people posing together in a group portrait photo"
+      ],
+      "baseline_threshold": 0.2
+    },
+    {
+      "id": "full_body_person",
+      "label": "Full-Body / Distant Person",
+      "group": "people",
+      "description": "A person standing at a distance showing their full body or outfit",
+      "prompts": [
+        "Full Body / Distant Person. a photo of a person or people standing far away, full body view, pedestrian walking, street scene with person, outfit photo, distant person outdoors"
+      ],
+      "baseline_threshold": 0.2
+    },
+    {
+      "id": "crowd_event",
+      "label": "Crowd or Public Event",
+      "group": "people",
+      "description": "A large crowd of people at a concert, stadium, street festival, or public gathering",
+      "prompts": [
+        "a photograph of a large crowd of many people at a concert, festival, or public event",
+        "an outdoor music concert festival, crowd of concertgoers listening to music in a park or field, outdoor music festival gathering with people and stage",
+        "a crowded street, stadium audience, or public gathering with many people",
+        "an event photo with a crowd of spectators and audience members sitting on grass or lawn"
+      ],
+      "baseline_threshold": 0.195
+    },
+    {
+      "id": "child_or_baby",
+      "label": "Child or Baby",
+      "group": "people",
+      "description": "A photograph of a baby, infant, toddler, or young child",
+      "prompts": [
+        "a photograph of a real human baby, infant, or newborn child",
+        "a portrait photo of a young human toddler or little child with human face",
+        "a close-up portrait photograph of a little human boy or little girl"
+      ],
+      "baseline_threshold": 0.23,
+      "contrast_anchors": [
+        "benign_obj",
+        "clean_selfie"
+      ],
+      "contrast_margin": 0.005
+    },
+    {
+      "id": "portrait_studio",
+      "label": "Professional / Studio Portrait",
+      "group": "people",
+      "description": "A professional studio headshot or formal corporate portrait with studio lighting",
+      "prompts": [
+        "a professional studio headshot portrait photograph with clean background and studio lighting",
+        "a formal business corporate portrait of a person in professional attire",
+        "a high-fashion professional photography portrait of a model"
+      ],
+      "baseline_threshold": 0.205
+    },
+    {
+      "id": "couple_romantic",
+      "label": "Couple / Romantic Pose",
+      "group": "people",
+      "description": "Two people hugging, kissing, holding hands, or posing as a romantic couple",
+      "prompts": [
+        "a romantic photograph of a couple hugging, embracing, or kissing together",
+        "two lovers posing closely together in a romantic couple photo",
+        "a wedding or engagement portrait of a romantic couple"
+      ],
+      "baseline_threshold": 0.205
+    },
+    {
+      "id": "benign_gesture",
+      "label": "Friendly or Benign Hand Gesture",
+      "group": "people",
+      "description": "A person gesturing with hands in a positive, friendly or neutral way: thumbs up, like sign, peace sign, victory V sign, waving hand hello or goodbye, ok hand sign, high five",
+      "prompts": [
+        "a photograph of a person giving a thumbs up gesture, thumb up gesture of approval",
+        "a close-up of a hand giving a thumbs up, thumb raised up, positive thumbs-up approval gesture",
+        "a person posing with a thumbs up hand gesture, friendly like thumbs up gesture"
+      ],
+      "baseline_threshold": 0.205,
+      "contrast_anchors": [
+        "clean_selfie",
+        "benign_scene"
+      ],
+      "contrast_margin": 0.005
+    },
+    {
+      "id": "cat",
+      "label": "Cat / Feline",
+      "group": "animals",
+      "description": "A domestic cat, kitten, or feline pet",
+      "prompts": [
+        "a photograph of a domestic cat, cute kitten, or feline pet with whiskers and fur",
+        "a close-up or indoor photo of a cat sitting, sleeping, or being held",
+        "a furry house cat or kitten looking at the camera"
+      ],
+      "baseline_threshold": 0.195
+    },
+    {
+      "id": "dog",
+      "label": "Dog / Canine",
+      "group": "animals",
+      "description": "A domestic dog, puppy, or canine pet",
+      "prompts": [
+        "a photograph of a domestic dog, cute puppy, or canine pet",
+        "a photo of a dog outdoors or indoors looking at the camera",
+        "a furry pet dog or puppy playing or sitting",
+        "a pedigree dog such as a retriever, shepherd, poodle, terrier, spaniel, hound, bouvier, or long-haired shaggy dog",
+        "a domestic canine pet dog, terrier, hound, or hairless dog standing or sitting",
+        "a close-up portrait of a domestic pet dog with snout, floppy ears, and canine face"
+      ],
+      "baseline_threshold": 0.195
+    },
+    {
+      "id": "bird",
+      "label": "Bird / Avian",
+      "group": "animals",
+      "description": "A living feathered bird, parrot, eagle, pigeon, or winged avian creature",
+      "prompts": [
+        "a photograph of a real living feathered bird, avian wildlife, songbird, sparrow, parrot, eagle, or duck",
+        "a wild bird with plumage, feathers and beak perched on a tree branch or flying in the sky",
+        "a close-up wildlife photo of a real feathered bird"
+      ],
+      "baseline_threshold": 0.23,
+      "contrast_anchors": [
+        "benign_obj",
+        "benign_scene",
+        "benign_blur"
+      ],
+      "contrast_margin": 0.005
+    },
+    {
+      "id": "horse_equine",
+      "label": "Horse / Equine",
+      "group": "animals",
+      "description": "A horse, pony, foal, or equestrian animal",
+      "prompts": [
+        "a photograph of a horse, stallion, mare, or pony in a field or stable",
+        "an equestrian photo of a horse running or being ridden",
+        "a close-up portrait of a horse head and mane"
+      ],
+      "baseline_threshold": 0.22,
+      "contrast_anchors": [
+        "canine_domestic",
+        "benign_obj"
+      ],
+      "contrast_margin": 0.003
+    },
+    {
+      "id": "aquatic_marine_life",
+      "label": "Fish & Marine Life",
+      "group": "animals",
+      "description": "Fish, dolphins, sharks, whales, sea turtles, or underwater marine creatures",
+      "prompts": [
+        "an underwater photograph of swimming fish, coral reef, or marine life",
+        "a photo of a dolphin, whale, shark, jellyfish, or sea turtle in the ocean",
+        "aquarium fish swimming in clear blue water"
+      ],
+      "baseline_threshold": 0.205
+    },
+    {
+      "id": "insects_reptiles",
+      "label": "Insects, Reptiles & Amphibians",
+      "group": "animals",
+      "description": "Butterflies, bees, spiders, lizards, snakes, frogs, or turtles",
+      "prompts": [
+        "a macro photograph of a living insect, beetle, bug, butterfly, bee, caterpillar, or spider crawling",
+        "a photo of a living reptile or amphibian such as a lizard, gecko, chameleon, snake, turtle, frog, or axolotl salamander",
+        "a gila monster, beaded lizard, venomous desert lizard with black and orange bead-like scales crawling on rocks",
+        "a close-up nature wildlife shot of an insect, creeping bug, reptile, or amphibian creature"
+      ],
+      "baseline_threshold": 0.208
+    },
+    {
+      "id": "wildlife_animal",
+      "label": "Wild & Exotic Animals",
+      "group": "animals",
+      "description": "Wild mammals such as lions, tigers, bears, elephants, deer, monkeys, or rabbits",
+      "prompts": [
+        "a wildlife photograph of a wild mammal such as a lion, tiger, elephant, bear, deer, fox, or armadillo with armor shell",
+        "a photograph of a monkey, capuchin, chimpanzee, gorilla, or primate in a tree or zoo",
+        "a wild mammal, rodent, or exotic forest animal such as a wild boar, coyote, fox, badger, or deer in the wild"
+      ],
+      "baseline_threshold": 0.2,
+      "contrast_anchors": [
+        "canine_domestic"
+      ],
+      "contrast_margin": 0.011
+    },
+    {
+      "id": "car_automobile",
+      "label": "Car / Automobile",
+      "group": "vehicles",
+      "description": "A passenger car, sedan, SUV, sports car, or automobile interior/exterior",
+      "prompts": [
+        "a photograph of a car, automobile, sedan, SUV, or sports car on the road or parked",
+        "an automotive photo showing a car exterior, wheels, headlights, or car dashboard interior",
+        "a motor vehicle automobile parked outdoors"
+      ],
+      "baseline_threshold": 0.22
+    },
+    {
+      "id": "motorcycle_scooter",
+      "label": "Motorcycle or Scooter",
+      "group": "vehicles",
+      "description": "A motorcycle, motorbike, moped, or motor scooter",
+      "prompts": [
+        "a photograph of a motorcycle, motorbike, chopper, or motor scooter",
+        "a two-wheeled motorcycle parked or ridden on a street",
+        "a sportbike or scooter with handlebars and helmet"
+      ],
+      "baseline_threshold": 0.22
+    },
+    {
+      "id": "bicycle",
+      "label": "Bicycle / Cycling",
+      "group": "vehicles",
+      "description": "A pedal bicycle, mountain bike, road bike, or e-bike",
+      "prompts": [
+        "a photograph of a bicycle, road bike, or mountain bike with two wheels and pedals",
+        "a cyclist riding a bicycle outdoors or a parked bike",
+        "a close-up of a bicycle frame, handlebars, and wheels"
+      ],
+      "baseline_threshold": 0.205
+    },
+    {
+      "id": "truck_commercial_vehicle",
+      "label": "Truck, Bus or Heavy Vehicle",
+      "group": "vehicles",
+      "description": "A cargo truck, semi-trailer, delivery van, bus, or tractor",
+      "prompts": [
+        "a photograph of a large cargo truck, semi-trailer lorry, delivery van, or commercial vehicle",
+        "a passenger bus, construction vehicle, or farm tractor on the road",
+        "a heavy transport truck or van"
+      ],
+      "baseline_threshold": 0.205
+    },
+    {
+      "id": "aircraft_aviation",
+      "label": "Aircraft / Aviation",
+      "group": "vehicles",
+      "description": "An airplane, jetliner, helicopter, or drone in the sky or at an airport",
+      "prompts": [
+        "a photograph of an airplane, commercial jetliner, or aircraft flying in the sky or on a runway",
+        "a helicopter or aviation aircraft with wings and engines",
+        "an airport tarmac or airplane cabin wing view"
+      ],
+      "baseline_threshold": 0.205
+    },
+    {
+      "id": "boat_maritime",
+      "label": "Boat, Yacht or Ship",
+      "group": "vehicles",
+      "description": "A boat, sailboat, yacht, cruise ship, or watercraft on the water",
+      "prompts": [
+        "a photograph of a boat, sailboat, luxury yacht, or ship floating on water",
+        "a maritime vessel, ferry, kayak, or motorboat on the sea or lake",
+        "a harbor marina with boats moored on the water"
+      ],
+      "baseline_threshold": 0.205
+    },
+    {
+      "id": "cooked_meal_dish",
+      "label": "Cooked Meal / Restaurant Dish",
+      "group": "food_drink",
+      "description": "A plated meal, pasta, meat, salad, soup, or cooked food on a table",
+      "prompts": [
+        "a close-up food photograph of a cooked meal, pasta, meat, or gourmet dish on a plate",
+        "a restaurant table with delicious prepared food, bowl of soup, or salad",
+        "a homemade dinner plate with savory food and cutlery",
+        "a hot pot, boiling stew, soup dish, fondue meal, or cooked culinary recipe in a pot or bowl"
+      ],
+      "baseline_threshold": 0.198
+    },
+    {
+      "id": "pizza_fastfood",
+      "label": "Pizza, Burger or Fast Food",
+      "group": "food_drink",
+      "description": "Pizza, hamburger, french fries, sandwich, tacos, or street food",
+      "prompts": [
+        "a photograph of a baked pizza with melted cheese and tomato sauce, or a slice of pizza",
+        "a juicy hamburger, cheeseburger, sandwich, hot dog, and french fries",
+        "fast food meal with burger, pizza, tacos, or fried snacks"
+      ],
+      "baseline_threshold": 0.2
+    },
+    {
+      "id": "dessert_sweets",
+      "label": "Dessert, Cake or Pastry",
+      "group": "food_drink",
+      "description": "Cakes, ice cream, chocolate, cookies, pastries, or sweet desserts",
+      "prompts": [
+        "a photograph of a sweet dessert, birthday cake, pastry, croissant, or cupcakes",
+        "ice cream cone, gelato, chocolate dessert, donuts, or cookies on a plate",
+        "bakery sweets and patisserie desserts"
+      ],
+      "baseline_threshold": 0.202
+    },
+    {
+      "id": "fruits_vegetables",
+      "label": "Fresh Fruits & Vegetables",
+      "group": "food_drink",
+      "description": "Fresh raw fruits, berries, apples, bananas, or raw vegetables and produce",
+      "prompts": [
+        "a photograph of fresh colorful fruits and vegetables such as apples, oranges, bananas, strawberries, or tomatoes",
+        "raw organic grocery produce, fruit basket, or fresh greens",
+        "freshly harvested fruits and vegetables on a table or market stall"
+      ],
+      "baseline_threshold": 0.202
+    },
+    {
+      "id": "drinks_beverages",
+      "label": "Drinks, Cocktails & Beverages",
+      "group": "food_drink",
+      "description": "Glasses or bottles of wine, beer, cocktails, juice, soda, or water",
+      "prompts": [
+        "a photograph of a drink, cocktail glass, wine glass, pint of beer, or beverage bottle",
+        "refreshing cold drink with ice, fruit juice, soda can, or bar drinks",
+        "a bottle and glass of wine, champagne, or spirits on a table"
+      ],
+      "baseline_threshold": 0.202,
+      "contrast_anchors": [
+        "measuring_utensil"
+      ],
+      "contrast_margin": 0.003
+    },
+    {
+      "id": "coffee_tea",
+      "label": "Coffee, Espresso or Tea",
+      "group": "food_drink",
+      "description": "A cup or mug of coffee, cappuccino, latte art, espresso, or hot tea",
+      "prompts": [
+        "a close-up photograph of a cup of coffee, cappuccino with latte art foam, or espresso mug",
+        "a warm cup or mug of hot tea or brewed coffee with steam on a saucer",
+        "morning coffee cup with roasted coffee beans or saucer"
+      ],
+      "baseline_threshold": 0.215
+    },
+    {
+      "id": "mountain_hills",
+      "label": "Mountains & Hills",
+      "group": "nature_landscape",
+      "description": "Scenic mountain peaks, rocky cliffs, alpine valleys, or rolling hills",
+      "prompts": [
+        "a scenic landscape photograph of high mountain peaks, steep rocky cliffs, snow-capped mountains and alpine valleys",
+        "panoramic view of rugged mountain range, high rocky elevation and nature wilderness",
+        "hiking trail overlooking rocky high mountains and steep alpine valleys"
+      ],
+      "baseline_threshold": 0.22,
+      "contrast_anchors": [
+        "benign_scene"
+      ],
+      "contrast_margin": 0.01
+    },
+    {
+      "id": "beach_sea_coast",
+      "label": "Beach, Sea & Ocean Coast",
+      "group": "nature_landscape",
+      "description": "Sandy beach, ocean waves, tropical coastline, lake, or river water",
+      "prompts": [
+        "a scenic photograph of a sandy beach, turquoise sea water, and ocean waves crashing on the shore",
+        "a coastal landscape with sea, shoreline, palm trees, or rocky cliff by the ocean",
+        "a calm lake, river, or open sea horizon"
+      ],
+      "baseline_threshold": 0.2
+    },
+    {
+      "id": "forest_trees",
+      "label": "Forest, Trees & Park",
+      "group": "nature_landscape",
+      "description": "Dense woods, green forest trees, park foliage, or woodland trails",
+      "prompts": [
+        "a nature photograph of a forest with tall green trees, woods, and woodland path",
+        "green park scenery with lush trees, grass lawn, and natural foliage",
+        "sunlight shining through forest tree branches and leaves"
+      ],
+      "baseline_threshold": 0.2
+    },
+    {
+      "id": "flowers_plants",
+      "label": "Flowers, Blossoms & Houseplants",
+      "group": "nature_landscape",
+      "description": "Close-up of flowers, roses, floral bouquets, potted plants, or botanical leaves",
+      "prompts": [
+        "a close-up photograph of daisy flowers, white petals and yellow center, blooming blossoms, daisies, roses, or floral bouquet",
+        "macro floral photography of flower petals, daisies, wildflowers, botanical plants, or floral arrangement",
+        "a green potted houseplant, succulent, cactus, or botanical garden leaves"
+      ],
+      "baseline_threshold": 0.2
+    },
+    {
+      "id": "sky_sunset_clouds",
+      "label": "Sky, Sunset & Clouds",
+      "group": "nature_landscape",
+      "description": "Dramatic sunset, sunrise, blue sky with clouds, rainbow, or night starry sky",
+      "prompts": [
+        "a photograph of a golden sunset or sunrise sky with glowing orange and purple clouds",
+        "blue sky filled with white fluffy clouds or a starry night sky with the moon",
+        "dramatic atmospheric sky horizon at dusk or dawn"
+      ],
+      "baseline_threshold": 0.205
+    },
+    {
+      "id": "snow_winter_scene",
+      "label": "Snow & Winter Landscape",
+      "group": "nature_landscape",
+      "description": "Snow-covered ground, winter landscape, ice, or ski slopes",
+      "prompts": [
+        "a winter landscape photograph covered in white snow, frost, and ice",
+        "snowy trees, frozen lake, or alpine ski slope in winter",
+        "falling snow in a cold outdoor winter scene"
+      ],
+      "baseline_threshold": 0.225,
+      "contrast_anchors": [
+        "benign_obj",
+        "clean_selfie",
+        "benign_doc"
+      ],
+      "contrast_margin": 0.005
+    },
+    {
+      "id": "field_countryside_landscape",
+      "label": "Rural Countryside, Field & Fence",
+      "group": "nature_landscape",
+      "description": "A rural countryside landscape, green grassy meadow, farm field, pasture, or rustic wooden fence",
+      "prompts": [
+        "a scenic rural countryside landscape, grassy meadow, green pasture, farm field, or agricultural land",
+        "a wooden worm fence, split-rail zig-zag wooden fence, farm fence in an outdoor rural grassy field or pasture",
+        "open green grassland, grassy field scenery, or rural farming landscape outdoors"
+      ],
+      "baseline_threshold": 0.198
+    },
+    {
+      "id": "street_cityscape",
+      "label": "City Street & Urban Skyline",
+      "group": "urban_indoor",
+      "description": "Urban street scene, downtown skyline, roads, bridges, or town square",
+      "prompts": [
+        "an urban street photograph of a city road, sidewalks, downtown buildings, or town square",
+        "a modern city skyline with skyscrapers, bridges, and street lights",
+        "an outdoor urban neighborhood or city avenue"
+      ],
+      "baseline_threshold": 0.2,
+      "contrast_anchors": [
+        "benign_doc",
+        "specialized_doc"
+      ],
+      "contrast_margin": 0.005
+    },
+    {
+      "id": "building_architecture",
+      "label": "Building, Monument & Architecture",
+      "group": "urban_indoor",
+      "description": "Exterior of a house, historic monument, church, castle, or modern building facade",
+      "prompts": [
+        "an architectural photograph of a building exterior, house facade, church, cathedral, or historic monument",
+        "a castle, palace, museum, or modern architectural structure",
+        "a prison, jail cell, correctional facility, penitentiary, or detention facility with iron bars and concrete walls",
+        "exterior view of a residential house or commercial building"
+      ],
+      "baseline_threshold": 0.2,
+      "contrast_anchors": [
+        "benign_doc",
+        "specialized_doc"
+      ],
+      "contrast_margin": 0.005
+    },
+    {
+      "id": "home_living_room",
+      "label": "Home / Living Room & Furniture",
+      "group": "urban_indoor",
+      "description": "Indoor home environment with sofa, wicker hamper, storage basket, living room, dining room, or furniture",
+      "prompts": [
+        "an indoor photograph of a home living room with a sofa, couch, table, walls, and domestic decor",
+        "a domestic kitchen, dining room, or apartment room interior",
+        "inside a cozy house room with furniture, storage hamper, wicker basket, curtains, and lighting"
+      ],
+      "baseline_threshold": 0.198
+    },
+    {
+      "id": "bedroom_bathroom_interior",
+      "label": "Bedroom or Bathroom Interior",
+      "group": "urban_indoor",
+      "description": "An indoor bedroom with a bed and pillows, or a bathroom with mirror and sink",
+      "prompts": [
+        "an indoor photograph of a bedroom with a bed, mattress, pillows, and blanket",
+        "a bathroom interior with a mirror, sink, tiles, or shower",
+        "inside a hotel room or domestic bedroom"
+      ],
+      "baseline_threshold": 0.202
+    },
+    {
+      "id": "office_workspace",
+      "label": "Office, Desk & Workspace",
+      "group": "urban_indoor",
+      "description": "An office desk, computer workstation, laser printer, copier, meeting room, or classroom interior",
+      "prompts": [
+        "an indoor photograph of an office workspace, desk with computer monitor, laser printer, chair, and keyboard",
+        "a corporate meeting room, conference hall, office copy room, classroom, or study desk",
+        "a work desk setup with laser printer, paper tray, and office equipment inside an office building"
+      ],
+      "baseline_threshold": 0.202
+    },
+    {
+      "id": "store_restaurant_interior",
+      "label": "Shop, Mall or Restaurant Interior",
+      "group": "urban_indoor",
+      "description": "Inside a supermarket, retail store, shopping mall, cafe, or restaurant dining hall",
+      "prompts": [
+        "an indoor photograph inside a retail store, supermarket aisles with shelves, or shopping mall",
+        "the interior of a restaurant, bar, pub, or coffee shop with tables and chairs",
+        "commercial shop display with merchandise shelves"
+      ],
+      "baseline_threshold": 0.205
+    },
+    {
+      "id": "electronics_smartphone_pc",
+      "label": "Electronics, Smartphone & Computers",
+      "group": "objects_lifestyle",
+      "description": "Smartphones, laptops, tablets, laser printers, copiers, cameras, headphones, televisions, or electronic hardware",
+      "prompts": [
+        "a close-up photograph of electronic devices such as a smartphone, mobile phone, laptop computer, or tablet",
+        "an office laser printer, desktop printer, scanner, photocopier, or computer peripheral hardware",
+        "a television set, TV screen, CRT television, flatscreen monitor, or television receiver in a room",
+        "digital camera, headphones, video game console, television screen, or computer hardware",
+        "consumer electronics gadget or tech device on a surface"
+      ],
+      "baseline_threshold": 0.2
+    },
+    {
+      "id": "clothing_fashion_apparel",
+      "label": "Clothing, Shoes & Fashion",
+      "group": "objects_lifestyle",
+      "description": "Shirts, dresses, jackets, sneakers, shoes, handbags, or folded garments",
+      "prompts": [
+        "Clothing, Fashion & Apparel. an everyday outfit, stylish clothing, casual streetwear, dress, shirt, pants, coat, jacket, footwear, shoes, sneakers, fashion model apparel, textile garments",
+        "protective clothing, bulletproof vest, police tactical vest, safety vest, jacket, or protective gear",
+        "fashion accessories, winter apparel, scarves, hats, gloves, socks, or wearable clothing"
+      ],
+      "baseline_threshold": 0.215
+    },
+    {
+      "id": "sports_fitness_gym",
+      "label": "Sports, Gym & Fitness",
+      "group": "objects_lifestyle",
+      "description": "Gym workout, dumbbells, soccer ball, basketball, golf ball, tennis, running, or athletic activity",
+      "prompts": [
+        "a photograph of a gym workout, fitness training with dumbbells, barbells, or exercise equipment",
+        "sports activity or equipment such as a soccer ball, basketball, golf ball, baseball, tennis racket, or stadium field",
+        "a golf ball on grass, sports ball, or athletic gear product photo",
+        "an athlete exercising, lifting weights, running, or playing sports"
+      ],
+      "baseline_threshold": 0.202
+    },
+    {
+      "id": "musical_instrument",
+      "label": "Musical Instruments & Audio",
+      "group": "objects_lifestyle",
+      "description": "Guitar, piano, drums, violin, microphone, or live music performance gear",
+      "prompts": [
+        "a photograph of a musical instrument such as an acoustic or electric guitar, piano keyboard, drums, or violin",
+        "a musician playing an instrument or singing into a studio microphone",
+        "music equipment, amplifier, synthesizer, or DJ turntable"
+      ],
+      "baseline_threshold": 0.205
+    },
+    {
+      "id": "books_stationery",
+      "label": "Books, Notebooks & Packaging",
+      "group": "objects_lifestyle",
+      "description": "Printed books, bookshelves, notebooks, pens, cardboard boxes, or product packaging",
+      "prompts": [
+        "a photograph of a printed book, stack of books, bookshelf, or open notebook with a pen",
+        "a cardboard shipping box, paper parcel packaging, or mailing carton",
+        "reading a hardcover or paperback book with pages"
+      ],
+      "baseline_threshold": 0.205
+    },
+    {
+      "id": "toys_gaming",
+      "label": "Toys, Collectibles & Board Games",
+      "group": "objects_lifestyle",
+      "description": "Plush stuffed animals, Lego bricks, action figures, dolls, or board games",
+      "prompts": [
+        "a photograph of children's toys, plush teddy bear, action figure, doll, or Lego building blocks",
+        "a tabletop board game, playing cards, puzzle, or collectible figurine",
+        "colorful plastic or wooden toys"
+      ],
+      "baseline_threshold": 0.205
+    },
+    {
+      "id": "jewelry_watch_accessories",
+      "label": "Watches, Jewelry & Eyewear",
+      "group": "objects_lifestyle",
+      "description": "Wristwatches, rings, necklaces, bracelets, sunglasses, or eyeglasses",
+      "prompts": [
+        "a close-up photograph of a wristwatch, luxury watch, gold ring, necklace, or jewelry",
+        "a pair of sunglasses, prescription eyeglasses, or fashion jewelry piece",
+        "sparkling gemstone ring, earrings, or bracelet"
+      ],
+      "baseline_threshold": 0.205
+    },
+    {
+      "id": "tools_hardware",
+      "label": "Tools, Hardware & DIY Equipment",
+      "group": "objects_lifestyle",
+      "description": "Power tools, drill, hammer, wrench, screwdriver, measuring tape, toolbox, or hardware",
+      "prompts": [
+        "a power drill, cordless electric drill, driver, rotary drilling power tool, or workshop tool",
+        "a handheld electric power drill, circular saw, or workshop hardware tool held by hand or on a bench",
+        "hardware tools, hammer, wrench, screwdriver, pliers, or DIY equipment",
+        "workshop equipment, toolbox, hardware supplies, or construction tools"
+      ],
+      "baseline_threshold": 0.2
+    },
+    {
+      "id": "pest_control_traps",
+      "label": "Pest Control & Rodent Traps",
+      "group": "objects_lifestyle",
+      "description": "Mousetraps, rodent traps, pest control devices, or insect traps",
+      "prompts": [
+        "a mousetrap, wooden snap trap, mouse trap with spring, or rodent catcher on the floor",
+        "a spring-loaded wooden mousetrap, mouse trap, or rodent snap trap",
+        "a pest control trap, rodent trap, or mechanical mouse trap"
+      ],
+      "baseline_threshold": 0.205,
+      "contrast_anchors": [
+        "benign_blur"
+      ],
+      "contrast_margin": 0.002
+    },
+    {
+      "id": "safety_medical_equipment",
+      "label": "Safety Equipment, Medical & Diving Gear",
+      "group": "objects_lifestyle",
+      "description": "Oxygen mask, scuba diving regulator, respirator, protective gear, or medical devices",
+      "prompts": [
+        "an oxygen mask, scuba diving regulator, respirator mask, breathing tube and mouthpiece, or emergency breathing equipment",
+        "scuba diving gear, diving regulator with hoses and mouthpiece, underwater diving mask, or scuba breathing apparatus",
+        "safety protective equipment, oxygen mask, respirator, diving regulator, or medical breathing apparatus"
+      ],
+      "baseline_threshold": 0.198,
+      "contrast_anchors": [
+        "benign_blur"
+      ],
+      "contrast_margin": 0.002
+    },
+    {
+      "id": "kitchenware_tableware",
+      "label": "Cookware, Pots & Tableware",
+      "group": "objects_lifestyle",
+      "description": "Cooking pots, frying pans, saucepans, measuring cups, bowls, dishes, or cookware",
+      "prompts": [
+        "a glass or plastic measuring cup with volume scale markings, measuring pitcher, or measuring cup in a kitchen",
+        "cookware, cooking pots, frying pans, saucepans, or kitchen pans on a stove or counter",
+        "kitchenware, cooking utensils, cookware pots, measuring cups, bowls, cutlery, or food preparation tools"
+      ],
+      "baseline_threshold": 0.198
+    },
+    {
+      "id": "kitchen_utensils_cutlery",
+      "label": "Kitchen Utensils, Wooden Spoons & Cutlery",
+      "group": "objects_lifestyle",
+      "description": "Wooden spoons, ladles, spatulas, cutlery, knives, forks, spoons, or food preparation utensils",
+      "prompts": [
+        "a wooden cooking spoon or ladle used in an indoor kitchen to prepare meals or stir a pot",
+        "a wooden spoon on a kitchen counter, tabletop, or food preparation board",
+        "kitchen cutlery, dining forks, knives, spoons, or cooking prep utensils"
+      ],
+      "baseline_threshold": 0.21,
+      "contrast_anchors": [
+        "benign_scene"
+      ],
+      "contrast_margin": 0.005
+    },
+    {
+      "id": "containers_storage_furniture",
+      "label": "Storage Containers, Baskets & Barrels",
+      "group": "objects_lifestyle",
+      "description": "Wicker baskets, storage hamper, wooden barrel, chest, crates, storage containers, or bins",
+      "prompts": [
+        "a painted metal barrel, steel oil drum, industrial chemical drum, blue or red steel barrel, fuel container",
+        "a photograph of a wicker storage hamper, laundry basket, or woven storage chest",
+        "a wooden barrel, wooden cask, beer barrel, wine cask, crate, or decorative basket",
+        "storage box, organizer bin, or household storage container"
+      ],
+      "baseline_threshold": 0.2
+    },
+    {
+      "id": "paper_document_form",
+      "label": "Paper Document, Letter or Book Page",
+      "group": "documents_media",
+      "description": "A printed sheet of paper, contract, administrative form, handwritten note, or text page",
+      "prompts": [
+        "Paper Document or Printed Text. a printed sheet of paper, book page, magazine text, form, handwritten letter, newspaper article, certificate, contract document, printed text page",
+        "a printed crossword puzzle, word search grid, worksheet, game page, or puzzle on paper"
+      ],
+      "baseline_threshold": 0.195
+    },
+    {
+      "id": "crossword_puzzle_games",
+      "label": "Crossword, Puzzles & Board Games",
+      "group": "documents_media",
+      "description": "Printed crossword puzzles, word search grids, sudoku, jigsaw puzzles, or tabletop games",
+      "prompts": [
+        "a printed crossword puzzle, word search grid, sudoku, or paper puzzle game with clues and letter squares",
+        "a close-up photograph of a crossword puzzle in a newspaper or magazine",
+        "a paper game sheet, pencil puzzle, brain teaser grid, or word puzzle"
+      ],
+      "baseline_threshold": 0.205,
+      "contrast_anchors": [
+        "benign_blur"
+      ],
+      "contrast_margin": 0.002
+    },
+    {
+      "id": "receipt_invoice",
+      "label": "Receipt, Invoice or Financial Bill",
+      "group": "documents_media",
+      "description": "A store cash register receipt, commercial invoice, restaurant bill, or price list with numbers",
+      "prompts": [
+        "a close-up photograph of a paper store receipt, cash register slip, or restaurant bill with itemized prices and numbers",
+        "a paper commercial invoice document, financial billing statement, or itemized table of prices",
+        "a thermal paper shopping receipt slip with barcode, date, and monetary total amount"
+      ],
+      "baseline_threshold": 0.235,
+      "contrast_anchors": [
+        "benign_obj",
+        "benign_doc",
+        "benign_blur"
+      ],
+      "contrast_margin": 0.005
+    },
+    {
+      "id": "identity_card_license",
+      "label": "Identity Card, Passport or Driver License",
+      "group": "documents_media",
+      "description": "A driver license, national ID card, passport, credit card, or official badge",
+      "prompts": [
+        "a physical plastic identity card, official government driver license, or open passport document page",
+        "a close-up photograph of an official plastic driver license, national identity card, or government photo ID card",
+        "an official government personal identification card, plastic ID badge, or passport booklet"
+      ],
+      "baseline_threshold": 0.235,
+      "contrast_anchors": [
+        "benign_doc",
+        "clean_selfie"
+      ],
+      "contrast_margin": 0.015
+    },
+    {
+      "id": "digital_screenshot_ui",
+      "label": "Digital Screenshot, App or Website UI",
+      "group": "documents_media",
+      "description": "A smartphone or computer screen capture showing a mobile app, chat, social media post, or software interface",
+      "prompts": [
+        "a digital screenshot of a smartphone mobile app screen, chat conversation, or social media feed",
+        "a computer software user interface screenshot, web browser page, or settings menu",
+        "a screen capture showing icons, buttons, notifications, and digital UI text"
+      ],
+      "baseline_threshold": 0.215,
+      "contrast_anchors": [
+        "clean_selfie",
+        "benign_blur"
+      ],
+      "contrast_margin": 0.002
+    },
+    {
+      "id": "chart_infographic_table",
+      "label": "Chart, Graph, Map or Infographic",
+      "group": "documents_media",
+      "description": "A data chart, bar graph, pie chart, diagram, presentation slide, or geographic map",
+      "prompts": [
+        "a graphic chart, bar graph, line plot, pie chart, or statistical data visualization diagram",
+        "an informational infographic poster, presentation slide, flowchart, or geographic map",
+        "a technical diagram or spreadsheet table with data"
+      ],
+      "baseline_threshold": 0.21
+    },
+    {
+      "id": "meme_image_macro",
+      "label": "Internet Meme or Satirical Graphic",
+      "group": "documents_media",
+      "description": "An internet meme, humorous image macro with bold caption overlay, or satirical social media graphic",
+      "prompts": [
+        "an internet meme, funny meme image, image macro with bold text caption overlay, viral social media meme template, satirical political meme",
+        "a four-panel satirical political meme comic with speech bubbles and cartoon characters",
+        "a satirical cartoon comic strip, four panels with characters talking in speech bubbles",
+        "a political cartoon webcomic, sequential comic strip panels with dialogue balloons"
+      ],
+      "baseline_threshold": 0.19,
+      "contrast_anchors": [
+        "clean_selfie",
+        "benign_doc",
+        "benign_blur"
+      ],
+      "contrast_margin": 0.005
+    },
+    {
+      "id": "illustration_drawing",
+      "label": "Digital Illustration, Sketch or Vector Art",
+      "group": "art_digital",
+      "description": "A 2D digital illustration, pencil drawing, vector graphic, or comic sketch",
+      "prompts": [
+        "Artwork or Digital Avatar. a digital drawing, graphic illustration, anime cartoon artwork, 2D manga sketch, 3D CGI video game render, fictional animated character",
+        "a 2D digital graphic illustration, vector artwork, or hand-drawn pencil and ink sketch"
+      ],
+      "baseline_threshold": 0.205
+    },
+    {
+      "id": "anime_manga_cartoon",
+      "label": "Anime, Manga or 2D Cartoon",
+      "group": "art_digital",
+      "description": "Japanese anime character, manga panel, or 2D animated cartoon character",
+      "prompts": [
+        "a Japanese anime or manga style illustration of an animated character with large eyes",
+        "a 2D animated cartoon character drawing from an animated show or comic",
+        "colorful anime fanart or cel-shaded cartoon illustration"
+      ],
+      "baseline_threshold": 0.205
+    },
+    {
+      "id": "cgi_3d_render_avatar",
+      "label": "3D CGI Render, Video Game or Digital Avatar",
+      "group": "art_digital",
+      "description": "A 3D computer-generated render, video game screenshot, or synthetic virtual avatar",
+      "prompts": [
+        "a 3D CGI computer-generated render, video game character screenshot, or synthetic virtual avatar",
+        "a 3D animated character model or digital metaverse avatar",
+        "synthetic computer graphics 3D scene"
+      ],
+      "baseline_threshold": 0.215,
+      "contrast_anchors": [
+        "clean_selfie"
+      ],
+      "contrast_margin": 0.005
+    },
+    {
+      "id": "painting_fine_art",
+      "label": "Fine Art Painting or Sculpture",
+      "group": "art_digital",
+      "description": "A classical oil painting, watercolor canvas, fresco, or marble statue/sculpture",
+      "prompts": [
+        "a fine art oil painting on canvas, watercolor artwork, or classical museum painting with brushstrokes",
+        "a carved wooden totem pole, native American totem pole sculpture, marble statue, bronze sculpture, or classical museum sculpture",
+        "traditional canvas painting or artistic portrait"
+      ],
+      "baseline_threshold": 0.205
+    },
+    {
+      "id": "blurry_out_of_focus",
+      "label": "Blurry / Out-of-Focus Image",
+      "group": "image_quality",
+      "description": "An out-of-focus, motion-blurred, or smeared photograph with poor sharpness",
+      "prompts": [
+        "Blurry or Dark Image. an extremely blurry unreadable out-of-focus image, severe motion blur smear, dark unintelligible blank noise graphic without face",
+        "a dark blurry out-of-focus grainy low-light underexposed photograph or low resolution image, blank graphic"
+      ],
+      "baseline_threshold": 0.228,
+      "contrast_anchors": [
+        "benign_obj",
+        "benign_scene",
+        "clean_selfie"
+      ],
+      "contrast_margin": 0.005
+    },
+    {
+      "id": "low_light_dark",
+      "label": "Dark / Underexposed Low-Light Image",
+      "group": "image_quality",
+      "description": "A pitch-dark, heavily underexposed, or dim night image with noisy shadows",
+      "prompts": [
+        "a very dark, underexposed, pitch-black low-light photograph with grainy shadows",
+        "an almost completely black blank or dim unlit frame",
+        "noisy low-light night image with poor visibility"
+      ],
+      "baseline_threshold": 0.21
+    },
+    {
+      "id": "nudity_explicit",
+      "label": "Explicit Nudity or Adult Sexual Content",
+      "group": "sensitive_content",
+      "description": "Explicit adult nudity, exposed breasts, buttocks, genitals, or sexual acts",
+      "prompts": [
+        "an explicit adult photograph, erotic pornography, nudity, exposed bare breasts, nipples, buttocks, bare ass, genitals, vagina, penis, sex act, blowjob, sucking dick, oral sex, sexual intercourse, panties, upskirt, lingerie, suggestive sensual erotic pose, flashing tits in public, exhibitionist, woman peeing outdoors, urination, flashing genitals, hentai anime erotica, bdsm fetish, sex toy, masturbation"
+      ],
+      "baseline_threshold": 0.235,
+      "contrast_anchors": [
+        "benign_obj",
+        "clean_selfie",
+        "benign_doc",
+        "benign_scene",
+        "benign_blur"
+      ],
+      "contrast_margin": 0.002
+    },
+    {
+      "id": "suggestive_swimwear_lingerie",
+      "label": "Swimwear, Bikini, Lingerie or Shirtless",
+      "group": "sensitive_content",
+      "description": "A person in a bikini, swimsuit, underwear, lingerie, or shirtless torso",
+      "prompts": [
+        "a photograph of a person wearing a bikini swimsuit, lingerie, bra and panties, or underwear",
+        "a shirtless man showing bare chest torso or a woman in revealing swimwear at the beach or bedroom",
+        "sensual glamour pose in lingerie or swimwear"
+      ],
+      "baseline_threshold": 0.225,
+      "contrast_anchors": [
+        "clean_selfie",
+        "benign_doc",
+        "benign_blur"
+      ],
+      "contrast_margin": 0.005
+    },
+    {
+      "id": "offensive_gesture",
+      "label": "Offensive or Vulgar Hand Gesture",
+      "group": "sensitive_content",
+      "description": "A person showing the middle finger, forearm jerk (umbrella gesture), offensive horns, fig sign, reverse V sign, or throat-slit gesture",
+      "prompts": [
+        "a photograph of a person showing the middle finger, flipping the bird, extended middle finger gesture",
+        "a close-up of an extended middle finger, flipping off, obscene vulgar middle finger",
+        "a drawing, sketch, vector icon or illustration of a hand showing the middle finger, flipping the bird drawing",
+        "an icon or graphic drawing of an extended middle finger, offensive middle finger gesture"
+      ],
+      "baseline_threshold": 0.2,
+      "contrast_anchors": [
+        "clean_selfie",
+        "benign_doc",
+        "benign_blur"
+      ],
+      "contrast_margin": 0.005
+    },
+    {
+      "id": "weapon_firearm_knife",
+      "label": "Weapon, Firearm or Knife",
+      "group": "sensitive_content",
+      "description": "A handgun, pistol, rifle, shotgun, assault rifle, combat knife, or dangerous weapon",
+      "prompts": [
+        "a photograph of a weapon, gun, firearm, pistol, handgun, revolver, rifle, shotgun, assault rifle, or knife"
+      ],
+      "baseline_threshold": 0.245,
+      "contrast_anchors": [
+        "clean_selfie",
+        "benign_doc",
+        "benign_blur",
+        "benign_obj",
+        "benign_scene"
+      ],
+      "contrast_margin": 0.04
+    },
+    {
+      "id": "violence_assault",
+      "label": "Violence, Physical Fight or Crime",
+      "group": "sensitive_content",
+      "description": "Physical fighting, armed robbery, street riot, shootout, terrorist attack, or violent assault",
+      "prompts": [
+        "a CCTV surveillance camera video of an armed robbery, violent crime, shootout, terrorist attack, assault"
+      ],
+      "baseline_threshold": 0.235,
+      "contrast_anchors": [
+        "benign_obj",
+        "clean_selfie",
+        "benign_doc",
+        "benign_scene",
+        "benign_blur"
+      ],
+      "contrast_margin": 0.005
+    },
+    {
+      "id": "illicit_drugs_narcotics",
+      "label": "Illicit Drugs & Narcotics Paraphernalia",
+      "group": "sensitive_content",
+      "description": "Cannabis joints, bongs, cocaine powder lines, meth pipes, syringes, or ecstasy pills",
+      "prompts": [
+        "a photograph of illicit drugs, narcotics, smoking methamphetamine pipe, crack pipe, crystal meth, heroin injection needle syringe, smoking cannabis marijuana joint bong, snorting cocaine lines, ecstasy mdma party pills, lsd blotter tabs, drug paraphernalia, narcotics consumption, substance abuse"
+      ],
+      "baseline_threshold": 0.23,
+      "contrast_anchors": [
+        "benign_obj",
+        "clean_selfie",
+        "benign_doc",
+        "benign_scene",
+        "benign_blur"
+      ],
+      "contrast_margin": 0.002
+    },
+    {
+      "id": "smoking_tobacco_vape",
+      "label": "Smoking Cigarette, Cigar or Vape",
+      "group": "sensitive_content",
+      "description": "A person smoking a tobacco cigarette, cigar, hookah, or electronic vape",
+      "prompts": [
+        "a photograph of a person smoking a lit cigarette, cigar, or exhaling smoke",
+        "an electronic cigarette vape pen, hookah shisha, or tobacco ashtray",
+        "holding a burning cigarette or vaping"
+      ],
+      "baseline_threshold": 0.22,
+      "contrast_anchors": [
+        "clean_selfie",
+        "benign_doc",
+        "benign_blur"
+      ],
+      "contrast_margin": 0.004
+    },
+    {
+      "id": "hate_extremist_symbol",
+      "label": "Hate Symbol, Swastika or Extremist Emblem",
+      "group": "sensitive_content",
+      "description": "Nazi swastika, KKK emblem, racist caricature, or extremist hate propaganda symbol",
+      "prompts": [
+        "a swastika nazi flag, emblem, kkk cross, racist caricature, blackface cartoon, racist ethnic slur propaganda, hate group insignia, hate symbol"
+      ],
+      "baseline_threshold": 0.26,
+      "contrast_anchors": [
+        "benign_obj",
+        "clean_selfie",
+        "benign_doc",
+        "benign_scene",
+        "benign_blur"
+      ],
+      "contrast_margin": 0.025
+    },
+    {
+      "id": "gore_corpses",
+      "label": "Gore, Blood, Injury or Corpses",
+      "group": "sensitive_content",
+      "description": "Dead human bodies, war casualties, severe bleeding wounds, or graphic medical gore",
+      "prompts": [
+        "a photograph of dead human bodies, corpses, concentration camp holocaust victims, pile of emaciated dead corpses, human casualty, graphic war atrocities massacre, dead victim on the ground"
+      ],
+      "baseline_threshold": 0.238,
+      "contrast_anchors": [
+        "benign_obj",
+        "clean_selfie",
+        "benign_doc",
+        "benign_scene",
+        "benign_blur"
+      ],
+      "contrast_margin": 0.006
+    }
+  ],
+  "text_categories": [
+    {
+      "id": "text_overlay_caption",
+      "label": "Embedded Text / Graphic Caption",
+      "group": "text_content",
+      "description": "Visible printed or digital text overlaid on the image"
+    },
+    {
+      "id": "inspirational_quote",
+      "label": "Inspirational or Motivational Quote",
+      "group": "text_content",
+      "description": "Motivational quote, life philosophy, greeting, or positive message"
+    },
+    {
+      "id": "commercial_brand_logo",
+      "label": "Brand Logo, Label or Product Text",
+      "group": "text_content",
+      "description": "Apparel brand logo, product label, recipe, or commercial signage"
+    },
+    {
+      "id": "profanity_vulgar_text",
+      "label": "Profanity, Swearing or Vulgar Quote",
+      "group": "text_content",
+      "description": "Explicit swear words, curse words, insults, or vulgar text expressions"
+    },
+    {
+      "id": "blasphemy_religious_slur",
+      "label": "Religious Blasphemy (Bestemmia)",
+      "group": "text_content",
+      "description": "Italian religious blasphemy or profane slurs directed at religious figures"
+    },
+    {
+      "id": "hate_speech_text",
+      "label": "Hate Speech & Discrimination (Text)",
+      "group": "text_content",
+      "description": "Racist, homophobic, antisemitic, or discriminatory text content"
+    },
+    {
+      "id": "threats_violence_text",
+      "label": "Violence, Death Threats or Self-Harm (Text)",
+      "group": "text_content",
+      "description": "Written death threats, violent incitement, terrorism, or self-harm encouragement"
+    },
+    {
+      "id": "cyber_malware_text",
+      "label": "Cyberattack, Hacking or Malware (Text)",
+      "group": "text_content",
+      "description": "Text about ransomware, malware creation, hacking exploits, or credential theft"
+    },
+    {
+      "id": "scam_fraud_text",
+      "label": "Financial Scam, Fraud or Contraband (Text)",
+      "group": "text_content",
+      "description": "Text promoting financial fraud, phishing, counterfeit documents, or illegal contraband"
+    }
+  ]
+}

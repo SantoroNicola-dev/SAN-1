@@ -1,15 +1,13 @@
 """
-Multilingual Text Semantic Moderation Engine (ONNX-powered)
-===========================================================
+Multilingual Text Semantic Categorization & Moderation Engine (ONNX-powered)
+============================================================================
 Uses a quantized multilingual sentence transformer (Paraphrase-Multilingual-MiniLM-L12-v2)
-to evaluate semantic toxicity, hate speech, threats, and harassment in Italian, English,
-and 50+ languages without requiring hardcoded phrase lists.
+to categorize text across general, commercial, motivational, and sensitive semantic categories
+in Italian, English, and 50+ languages with calibrated multi-label percentages.
 """
 
 from typing import List, Dict, Tuple, Optional, Any, Union
 from pathlib import Path
-import os
-import time
 import numpy as np
 
 try:
@@ -20,13 +18,12 @@ except ImportError:
     NLP_ONNX_AVAILABLE = False
 
 
-# Default Model Paths in workspace
 DEFAULT_NLP_DIR = Path(__file__).resolve().parent.parent / "models" / "nlp"
 DEFAULT_MODEL_PATH = DEFAULT_NLP_DIR / "model_quantized.onnx"
 DEFAULT_TOKENIZER_PATH = DEFAULT_NLP_DIR / "tokenizer.json"
 
 
-# Policy Anchor Sentences for Semantic Contrastive Space
+# Sensitive & Prohibited Policy Anchor Sentences
 SEMANTIC_POLICY_ANCHORS = {
     "HATE_AND_DISCRIMINATION": [
         "hate speech against protected groups, racist slurs, ethnic discrimination, antisemitism, white supremacy, bigotry",
@@ -72,24 +69,68 @@ SEMANTIC_POLICY_ANCHORS = {
     ],
 }
 
+# General & Benign Semantic Categories
+DESCRIPTIVE_TEXT_ANCHORS = {
+    "greeting_social_caption": {
+        "label": "Friendly Greeting or Social Caption",
+        "group": "text_content",
+        "phrases": [
+            "friendly greetings, hello everyone, have a nice day, welcome, love, kindness, smile, peace",
+            "scenic travel caption, beautiful sunny day, holiday vacation memories, family portrait photo",
+            "saluti amichevoli, buongiorno a tutti, buona giornata, pace, amore, gentilezza, felicità",
+        ],
+    },
+    "inspirational_quote": {
+        "label": "Inspirational or Motivational Quote",
+        "group": "text_content",
+        "phrases": [
+            "inspirational quote, motivational life philosophy, hard work, success, dreams, happiness, hope",
+            "citazione motivazionale, credi nei tuoi sogni, impegno e lavoro, successo personale, saggezza",
+        ],
+    },
+    "commercial_brand_logo": {
+        "label": "Brand Logo, Label or Product Text",
+        "group": "text_content",
+        "phrases": [
+            "fashion apparel clothing brand, casual t-shirt graphic logo, athletic sportswear brand, merchandise",
+            "harmless product label, 100% cotton made in Italy, washing instructions, food recipe, grocery item",
+            "marchio di abbigliamento, etichetta tessuto, cotone, made in italy, ricetta, indicazioni stradali",
+        ],
+    },
+    "humorous_joke_text": {
+        "label": "Humorous Joke or Satirical Caption",
+        "group": "text_content",
+        "phrases": [
+            "funny harmless meme, humorous innocent joke, cute animal quote, playful friendly banter",
+            "battuta divertente, scherzo simpatico, ironia leggera, meme umoristico",
+        ],
+    },
+}
+
 BENIGN_ANCHORS = [
-    "friendly greetings, hello everyone, have a nice day, welcome, love, kindness, smile, peace",
-    "inspirational quote, motivational life philosophy, hard work, success, dreams, happiness, hope",
-    "fashion apparel clothing brand, casual t-shirt graphic logo, athletic sportswear brand, merchandise",
-    "harmless product label, 100% cotton made in Italy, washing instructions, food recipe, grocery item",
-    "scenic travel caption, beautiful sunny day, holiday vacation memories, family portrait photo",
-    "funny harmless meme, humorous innocent joke, cute animal quote, playful friendly banter",
-    "saluti amichevoli, buongiorno a tutti, buona giornata, pace, amore, gentilezza, felicità",
-    "citazione motivazionale, credi nei tuoi sogni, impegno e lavoro, successo personale",
-    "marchio di abbigliamento, etichetta tessuto, cotone, made in italy, ricetta, indicazioni stradali",
+    p
+    for info in DESCRIPTIVE_TEXT_ANCHORS.values()
+    for p in info["phrases"]
 ]
+
+SENSITIVE_CATEGORY_MAPPING = {
+    "HATE_AND_DISCRIMINATION": ("hate_speech_text", "Hate Speech & Discrimination (Text)"),
+    "VIOLENCE_AND_THREATS": ("threats_violence_text", "Violence, Death Threats or Self-Harm (Text)"),
+    "CRUELTY_AND_ABUSE": ("threats_violence_text", "Cruelty, Abuse or Graphic Violence (Text)"),
+    "HARASSMENT_AND_DEGRADATION": ("profanity_vulgar_text", "Harassment, Insults or Degradation (Text)"),
+    "CYBERATTACKS_AND_MALWARE": ("cyber_malware_text", "Cyberattack, Hacking or Malware (Text)"),
+    "FRAUD_AND_SCAMS": ("scam_fraud_text", "Financial Scam or Fraud (Text)"),
+    "ILLEGAL_ACTS_AND_CONTRABAND": ("scam_fraud_text", "Illegal Acts or Contraband (Text)"),
+    "DANGEROUS_WEAPONS_AND_BOMBS": ("weapon_firearm_knife", "Dangerous Weapons or Explosives (Text)"),
+    "SURVEILLANCE_AND_PRIVACY_VIOLATION": ("scam_fraud_text", "Surveillance or Privacy Violation (Text)"),
+}
 
 
 class TextSemanticGuardrail:
     """
-    Tier-2 Semantic NLP Guardrail.
-    Embeds input text into 384-dimensional latent space and checks contrastive margin
-    against prohibited semantic concepts versus benign expressions.
+    Tier-2 Semantic NLP Categorizer & Guardrail.
+    Embeds input text into 384-dimensional latent space and computes both
+    multi-label semantic categories with percentages and contrastive safety scores.
     """
 
     def __init__(
@@ -111,15 +152,12 @@ class TextSemanticGuardrail:
         t_path = Path(tokenizer_path)
 
         if not NLP_ONNX_AVAILABLE:
-            print("[TextSemanticGuardrail] onnxruntime or tokenizers not installed.")
             return
 
         if not m_path.exists() or not t_path.exists():
-            print(f"[TextSemanticGuardrail] Model files not found at {m_path.parent}.")
             return
 
         try:
-            # Configure ONNX session for high-throughput single-core or multi-core CPU inference
             opts = ort.SessionOptions()
             opts.intra_op_num_threads = 1
             opts.inter_op_num_threads = 1
@@ -128,11 +166,10 @@ class TextSemanticGuardrail:
             self.session = ort.InferenceSession(
                 str(m_path),
                 sess_options=opts,
-                providers=["CPUExecutionProvider"]
+                providers=["CPUExecutionProvider"],
             )
             self.tokenizer = Tokenizer.from_file(str(t_path))
 
-            # Pre-compute anchor embeddings
             self._init_anchors()
             self.is_ready = True
         except Exception as e:
@@ -140,8 +177,7 @@ class TextSemanticGuardrail:
             self.is_ready = False
 
     def _init_anchors(self):
-        """Encodes and pre-caches normalized policy vectors for zero-shot contrastive arbitration."""
-        # 1. Toxic anchors by category
+        """Encodes and pre-caches normalized policy and descriptive vectors."""
         self.toxic_cat_vectors = {}
         all_toxic_vecs = []
         all_toxic_cats = []
@@ -153,11 +189,15 @@ class TextSemanticGuardrail:
                 all_toxic_vecs.append(v)
                 all_toxic_cats.append(cat_name)
 
-        self.all_toxic_matrix = np.array(all_toxic_vecs)  # Shape: (N_toxic, 384)
+        self.all_toxic_matrix = np.array(all_toxic_vecs)
         self.all_toxic_cats = all_toxic_cats
 
-        # 2. Benign anchors
-        self.benign_matrix = self.encode(BENIGN_ANCHORS)  # Shape: (N_benign, 384)
+        # Descriptive categories
+        self.descriptive_cat_vectors = {}
+        for cat_id, info in DESCRIPTIVE_TEXT_ANCHORS.items():
+            self.descriptive_cat_vectors[cat_id] = self.encode(info["phrases"])
+
+        self.benign_matrix = self.encode(BENIGN_ANCHORS)
 
     def encode(self, texts: Union[str, List[str]]) -> np.ndarray:
         """
@@ -170,7 +210,6 @@ class TextSemanticGuardrail:
         if not texts:
             return np.zeros((0, 384), dtype=np.float32)
 
-        # Batch encode with fast rust tokenizer
         encoded = [self.tokenizer.encode(t) for t in texts]
         batch_size = len(texts)
         max_len = min(max(len(e.ids) for e in encoded), self.max_seq_length)
@@ -192,36 +231,104 @@ class TextSemanticGuardrail:
             "token_type_ids": token_type_ids,
         }
 
-        # Run ONNX inference
         outputs = self.session.run(None, feed)
-        last_hidden_state = outputs[0]  # Shape: (batch_size, max_len, 384)
+        last_hidden_state = outputs[0]
 
-        # Mean pooling with attention mask
         mask_expanded = np.expand_dims(attention_mask, -1).astype(np.float32)
         sum_emb = np.sum(last_hidden_state * mask_expanded, axis=1)
         sum_mask = np.clip(mask_expanded.sum(axis=1), a_min=1e-9, a_max=None)
         pooled = sum_emb / sum_mask
 
-        # L2 Normalize
         norms = np.linalg.norm(pooled, axis=1, keepdims=True)
         return pooled / np.clip(norms, a_min=1e-9, a_max=None)
+
+    def classify_text(
+        self,
+        text: str,
+        min_confidence_pct: float = 25.0,
+        top_k: int = 5,
+    ) -> List[Dict[str, Any]]:
+        """
+        Categorizes arbitrary text into descriptive and sensitive semantic categories,
+        returning independent confidence_pct (0-100%) and normalized share_pct (100% sum).
+        """
+        if not self.is_ready or not text or len(text.strip()) < 3:
+            return []
+
+        v = self.encode([text])[0]
+        raw_candidates: Dict[str, Dict[str, Any]] = {}
+
+        # 1. Score descriptive categories
+        for cat_id, vecs in self.descriptive_cat_vectors.items():
+            sim = float(np.max(np.dot(vecs, v)))
+            info = DESCRIPTIVE_TEXT_ANCHORS[cat_id]
+            logit = 11.0 * (sim - 0.28)
+            conf = 100.0 / (1.0 + float(np.exp(-np.clip(logit, -15.0, 15.0))))
+            raw_candidates[cat_id] = {
+                "id": cat_id,
+                "label": info["label"],
+                "group": info["group"],
+                "similarity": round(sim, 4),
+                "confidence_pct": round(float(np.clip(conf, 0.0, 99.9)), 2),
+                "source": "nlp_semantic",
+            }
+
+        # 2. Score sensitive categories
+        max_benign_sim = float(np.max(np.dot(self.benign_matrix, v)))
+        for raw_cat, vecs in self.toxic_cat_vectors.items():
+            sim = float(np.max(np.dot(vecs, v)))
+            cat_id, cat_label = SENSITIVE_CATEGORY_MAPPING[raw_cat]
+            margin = sim - max_benign_sim
+            # Require meaningful elevation or positive margin against benign anchors
+            if sim < 0.35 or (sim < self.min_toxic_threshold and margin < 0.02):
+                conf = float(np.clip(sim * 40.0, 0.0, 18.0))
+            else:
+                logit = 12.5 * (sim - 0.34) + 3.0 * margin
+                conf = 100.0 / (1.0 + float(np.exp(-np.clip(logit, -15.0, 15.0))))
+                conf = float(np.clip(conf, 0.0, 99.9))
+
+            if cat_id not in raw_candidates or conf > raw_candidates[cat_id]["confidence_pct"]:
+                raw_candidates[cat_id] = {
+                    "id": cat_id,
+                    "label": cat_label,
+                    "group": "text_content",
+                    "similarity": round(sim, 4),
+                    "confidence_pct": round(conf, 2),
+                    "source": "nlp_semantic",
+                }
+
+        sorted_items = sorted(raw_candidates.values(), key=lambda x: x["confidence_pct"], reverse=True)
+        active = [item for item in sorted_items if item["confidence_pct"] >= min_confidence_pct]
+        if not active and sorted_items:
+            active = [sorted_items[0]]
+        if top_k and top_k > 0:
+            active = active[:top_k]
+
+        total_conf = sum(item["confidence_pct"] for item in active) or 1.0
+        running_share = 0.0
+        for i, item in enumerate(active):
+            if i == len(active) - 1:
+                share = round(max(0.0, 100.0 - running_share), 2)
+            else:
+                share = round((item["confidence_pct"] / total_conf) * 100.0, 2)
+                running_share += share
+            item["share_pct"] = share
+
+        return active
 
     def evaluate_text(
         self,
         text: str,
     ) -> Tuple[bool, str, float, float, Optional[str]]:
         """
-        Evaluates input text against semantic policy anchors.
+        Evaluates input text against semantic policy anchors (backward compatible).
         Returns:
             (is_allowed, category, max_toxic_sim, max_benign_sim, violation_reason)
         """
         if not self.is_ready or not text or len(text.strip()) < 4:
             return True, "ALLOWED_INNOCUOUS_TEXT", 0.0, 0.0, None
 
-        # Encode input text
-        v = self.encode([text])[0]  # Shape: (384,)
-
-        # Dot-product similarity against toxic and benign matrices
+        v = self.encode([text])[0]
         toxic_sims = np.dot(self.all_toxic_matrix, v)
         benign_sims = np.dot(self.benign_matrix, v)
 
@@ -232,8 +339,6 @@ class TextSemanticGuardrail:
         margin = max_toxic_sim - max_benign_sim
         matched_cat = self.all_toxic_cats[max_toxic_idx]
 
-        # Contrastive arbitration rule:
-        # Require toxic similarity to be meaningfully elevated (>= 0.38) before margin comparison
         is_blocked = (max_toxic_sim >= self.min_toxic_threshold) or (
             max_toxic_sim >= 0.38 and margin > self.margin_threshold
         )
@@ -250,7 +355,7 @@ class TextSemanticGuardrail:
                 "DANGEROUS_WEAPONS_AND_BOMBS": "The content instructs on manufacturing explosive devices, poisons, or illegal weapons.",
                 "SURVEILLANCE_AND_PRIVACY_VIOLATION": "The content refers to unauthorized wiretapping, hidden cameras, stalking, or privacy violations.",
             }
-            reason = reasons.get(matched_cat, "The content violates platform safety guidelines.")
+            reason = reasons.get(matched_cat, "The content matches a sensitive semantic category.")
             return False, f"BLOCKED_SEMANTIC_{matched_cat}", max_toxic_sim, max_benign_sim, reason
 
         return True, "ALLOWED_INNOCUOUS_TEXT", max_toxic_sim, max_benign_sim, None

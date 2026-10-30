@@ -1,8 +1,8 @@
 """
-Hybrid Vision Pipeline: S1stem Fast Path + System-2 Deliberation Path Orchestrator.
-===================================================================================
-Orchestrates high-speed deterministic image classification (Fast Path)
-and escalates borderline/ambiguous cases to System-2 Deliberation Engine.
+Hybrid Vision Pipeline: S1stem Fast Path + System-2 Spatial Multi-Crop Orchestrator.
+====================================================================================
+Orchestrates high-speed deterministic multi-label image classification (Fast Path)
+and escalates multi-subject/ambiguous cases to System-2 Spatial Multi-Crop Deliberation.
 """
 
 from typing import Union, List, Dict, Any, Optional
@@ -19,7 +19,7 @@ from .system2 import BaseDeliberator, DualStrategySystem2, DeliberationOutcome
 
 class HybridVisionPipeline:
     """
-    Unified end-to-end coordinator for Hybrid System-1 / System-2 Image Classification.
+    Unified end-to-end coordinator for Hybrid System-1 / System-2 Multi-Label Image Classification.
     """
 
     def __init__(
@@ -46,7 +46,11 @@ class HybridVisionPipeline:
             margin_threshold=margin_threshold,
             entropy_threshold=entropy_threshold,
         )
-        self.system2 = system2 or DualStrategySystem2(mode="adaptive")
+        self.system2 = system2 or DualStrategySystem2(
+            mode="adaptive",
+            s1_engine=self.s1_engine,
+            preprocessor=self.preprocessor,
+        )
 
         # Telemetry aggregation
         self.stats = {
@@ -65,29 +69,41 @@ class HybridVisionPipeline:
         self,
         image_input: Union[str, Path, bytes, Image.Image, np.ndarray],
         metadata: Optional[Dict[str, Any]] = None,
+        deep: bool = False,
+        min_confidence_pct: float = 25.0,
+        top_k: int = 10,
     ) -> Dict[str, Any]:
         """
-        Executes end-to-end classification pipeline:
+        Executes end-to-end multi-label classification pipeline:
         1. Preprocess input image to normalized tensor.
         2. Fast S1stem inference (<15 ms).
-        3. 3-Factor Gated routing evaluation.
-        4. If confident -> Certify immediately (Fast Path).
-        5. If uncertain -> Escalate to System-2 Deliberation Engine.
+        3. 3-Factor Gated routing evaluation (or forced deep=True spatial inspection).
+        4. If confident and not deep -> Certify immediately (Fast Path).
+        5. If uncertain or deep=True -> Escalate to System-2 Spatial Multi-Crop Engine.
         """
         t_start = time.perf_counter()
-        metadata = metadata or {}
+        metadata = dict(metadata) if metadata else {}
+        metadata.setdefault("min_confidence_pct", min_confidence_pct)
+        metadata.setdefault("top_k", top_k)
+        if deep:
+            metadata["deep"] = True
+
         self.stats["total_requests"] += 1
 
         # 1. Preprocess Image
         tensor = self.preprocessor.preprocess(image_input)
 
         # 2. S1stem Fast Path Inference
-        s1_result: S1DecisionResult = self.s1_engine.predict(tensor)
+        s1_result: S1DecisionResult = self.s1_engine.predict(
+            tensor,
+            min_confidence_pct=min_confidence_pct,
+            top_k=top_k,
+        )
 
         # 3. 3-Factor Confidence Gating
         route_decision: RouteDecision = self.router.evaluate(s1_result)
 
-        if route_decision.is_fast_path:
+        if route_decision.is_fast_path and not deep:
             # === FAST PATH EXIT (Zero LLM Tokens, <15 ms) ===
             self.stats["fast_path_count"] += 1
             self.stats["total_fast_path_ms"] += s1_result.latency_ms
@@ -101,19 +117,23 @@ class HybridVisionPipeline:
                 "confidence": s1_result.confidence,
                 "margin": s1_result.margin,
                 "entropy": s1_result.entropy,
+                "categories": s1_result.categories,
+                "crops_analyzed": s1_result.crops_analyzed,
                 "top_candidates": s1_result.top_candidates,
                 "latent_vector": s1_result.latent_vector,
+                "raw_similarities": s1_result.raw_similarities,
                 "flags": [],
                 "deliberation": None,
                 "telemetry": {
                     "s1_latency_ms": s1_result.latency_ms,
                     "pipeline_total_ms": round(total_duration_ms, 3),
+                    "crops_analyzed": s1_result.crops_analyzed,
                     "token_cost": 0.0,
                     "offload_rate_pct": self.get_offload_rate(),
                 },
             }
 
-        # === SYSTEM-2 DELIBERATIVE PATH EXIT ===
+        # === SYSTEM-2 DELIBERATIVE / SPATIAL MULTI-CROP PATH EXIT ===
         self.stats["deliberation_count"] += 1
         outcome: DeliberationOutcome = self.system2.deliberate(
             s1_result=s1_result,
@@ -124,6 +144,8 @@ class HybridVisionPipeline:
         self.stats["total_deliberation_ms"] += outcome.deliberation_latency_ms
         total_duration_ms = (time.perf_counter() - t_start) * 1000.0
 
+        final_categories = outcome.categories if outcome.categories else s1_result.categories
+
         return {
             "route": RouteTarget.DELIBERATIVE_PATH.value,
             "is_fast_path": False,
@@ -132,19 +154,24 @@ class HybridVisionPipeline:
             "confidence": outcome.deliberation_confidence,
             "margin": s1_result.margin,
             "entropy": s1_result.entropy,
+            "categories": final_categories,
+            "crops_analyzed": outcome.crops_analyzed,
             "top_candidates": s1_result.top_candidates,
             "latent_vector": s1_result.latent_vector,
+            "raw_similarities": s1_result.raw_similarities,
             "flags": route_decision.flags,
             "deliberation": {
                 "strategy": outcome.strategy_used,
                 "reasoning": outcome.reasoning_summary,
                 "context_used": outcome.context_used,
                 "deliberation_latency_ms": outcome.deliberation_latency_ms,
+                "crops_analyzed": outcome.crops_analyzed,
             },
             "telemetry": {
                 "s1_latency_ms": s1_result.latency_ms,
                 "deliberation_latency_ms": outcome.deliberation_latency_ms,
                 "pipeline_total_ms": round(total_duration_ms, 3),
+                "crops_analyzed": outcome.crops_analyzed,
                 "escalation_reasons": route_decision.flags,
                 "offload_rate_pct": self.get_offload_rate(),
             },

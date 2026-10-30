@@ -49,24 +49,24 @@ def onnx_model_path(tmp_path_factory):
 def sample_classes():
     return [
         {
-            "id": "INTEGERRIMO",
-            "label": "Componente Integro",
-            "description": "Componente metallico perfetto senza difetti visivi o crepe",
+            "id": "INTACT_COMPONENT",
+            "label": "Intact Component",
+            "description": "Perfect metallic component without visual defects or cracks",
         },
         {
-            "id": "DIFETTO_SALDATURA",
-            "label": "Difetto di Saldatura",
-            "description": "Saldatura irregolare con inclusioni di scoria o porosità superficiale",
+            "id": "WELDING_DEFECT",
+            "label": "Welding Defect",
+            "description": "Irregular weld with slag inclusions or surface porosity",
         },
         {
-            "id": "CREPA_STRUTTURALE",
-            "label": "Crepa Strutturale",
-            "description": "Fessurazione profonda o frattura lineare lungo la superficie metallica",
+            "id": "STRUCTURAL_CRACK",
+            "label": "Structural Crack",
+            "description": "Deep crack or linear fracture along the metal surface",
         },
         {
-            "id": "OSSIDAZIONE",
-            "label": "Ossidazione e Ruggine",
-            "description": "Macchie scure di corrosione e ruggine diffusa",
+            "id": "OXIDATION",
+            "label": "Oxidation and Rust",
+            "description": "Dark corrosion patches and widespread rust",
         },
     ]
 
@@ -203,15 +203,15 @@ def test_system2_deliberation():
     probs = np.array([0.51, 0.49], dtype=np.float32)
     s1_res = S1DecisionResult(
         winner_id="A",
-        winner_label="Classe A",
+        winner_label="Class A",
         winner_index=0,
         confidence=0.51,
         margin=0.02,
         entropy=1.85,
         probabilities=probs,
         top_candidates=[
-            {"id": "A", "label": "Classe A", "probability": 0.51},
-            {"id": "B", "label": "Classe B", "probability": 0.49},
+            {"id": "A", "label": "Class A", "probability": 0.51},
+            {"id": "B", "label": "Class B", "probability": 0.49},
         ],
         latent_vector=np.zeros(512),
         latency_ms=5.0,

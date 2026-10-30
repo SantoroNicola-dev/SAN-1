@@ -62,12 +62,12 @@ def test_san1_guardrail_end_to_end():
     guardrail = SAN1Guardrail(allow_benign_content=True)
 
     # Test clean text
-    res_text = guardrail.validate_text("Buongiorno a tutti, questa è una bellissima giornata di sole.")
+    res_text = guardrail.validate_text("Good morning everyone, this is a beautiful sunny day.")
     assert res_text.is_allowed is True
     assert res_text.status == "APPROVED"
 
-    # Test prohibited blasphemy text
-    res_bad = guardrail.validate_text("porco dio che schifo")
+    # Test prohibited text (threats / violence)
+    res_bad = guardrail.validate_text("I will kill you and your family with a gun")
     assert res_bad.is_allowed is False
     assert res_bad.status == "BLOCKED"
 

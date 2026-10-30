@@ -161,6 +161,7 @@ class SelfieValidationResult:
     remediation_hint: Optional[str] = None
     route_path: str = ""
     latency_ms: float = 0.0
+    categories: List[Dict[str, Any]] = field(default_factory=list)
     telemetry: Dict[str, Any] = field(default_factory=dict)
 
 
@@ -432,6 +433,7 @@ class SelfieGuardrail:
                 remediation_hint=None,
                 route_path=raw_res["route"],
                 latency_ms=round(elapsed_ms, 2),
+                categories=raw_res.get("categories", []),
                 telemetry=raw_res["telemetry"],
             )
 
@@ -458,6 +460,7 @@ class SelfieGuardrail:
             remediation_hint=meta_info["hint"],
             route_path=raw_res["route"],
             latency_ms=round(elapsed_ms, 2),
+            categories=raw_res.get("categories", []),
             telemetry=raw_res["telemetry"],
         )
 

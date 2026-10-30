@@ -103,19 +103,19 @@ def create_synthetic_test_suite():
 
 def format_status_badge(is_allowed: bool) -> str:
     if is_allowed:
-        return "\033[92m[✓ APPROVED - SELFIE VALIDO]\033[0m"
-    return "\033[91m[✗ BLOCKED - IMMAGINE RIFIUTATA]\033[0m"
+        return "\033[92m[✓ APPROVED - VALID SELFIE]\033[0m"
+    return "\033[91m[✗ BLOCKED - REJECTED IMAGE]\033[0m"
 
 
 def run_selfie_demo():
     print("=" * 86)
     print("  🛡️  S1STEM VISION // SELFIE GUARDRAIL & CONTENT VERIFICATION SYSTEM")
     print("=" * 86)
-    print("  POLICY: Consentiti ESCLUSIVAMENTE selfie in primo piano o di gruppo.")
-    print("  Tutte le altre immagini vengono bloccate e categorizzate con causale esplicita.")
+    print("  POLICY: EXCLUSIVELY close-up or group selfies permitted.")
+    print("  All other images are blocked and categorized with an explicit reason.")
     print("=" * 86 + "\n")
 
-    print("[*] Inizializzazione Guardrail con S1stem Two-Tower ONNX...")
+    print("[*] Initializing Guardrail with S1stem Two-Tower ONNX...")
     guardrail = SelfieGuardrail(
         model_path="models/clip/onnx/vision_model_quantized.onnx",
         text_model_path="models/clip/onnx/text_model_quantized.onnx",
@@ -125,17 +125,17 @@ def run_selfie_demo():
         entropy_threshold=1.70,
     )
 
-    print("[*] Generazione campioni di test sintetici...")
+    print("[*] Generating synthetic test samples...")
     samples = create_synthetic_test_suite()
-    print(f"[+] Pronti {len(samples)} scenari di test.\n")
+    print(f"[+] Ready with {len(samples)} test scenarios.\n")
 
     test_scenarios = [
-        ("Scenario 1: Selfie Singolo Primo Piano", samples["CLOSEUP_SELFIE"], "ALLOWED_CLOSEUP_SELFIE"),
-        ("Scenario 2: Selfie di Gruppo con Amici", samples["GROUP_SELFIE"], "ALLOWED_GROUP_SELFIE"),
-        ("Scenario 3: Panorama / Paesaggio Naturale", samples["LANDSCAPE"], "BLOCKED_LANDSCAPE"),
-        ("Scenario 4: Oggetto / Dispositivo Elettronico", samples["OBJECT_PHONE"], "BLOCKED_OBJECT"),
-        ("Scenario 5: Documento con Testo / ID Card", samples["DOCUMENT"], "BLOCKED_DOCUMENT"),
-        ("Scenario 6: Foto Scura / Sfocata / Danneggiata", samples["BLURRY"], "BLOCKED_BLURRY"),
+        ("Scenario 1: Single Close-up Selfie", samples["CLOSEUP_SELFIE"], "ALLOWED_CLOSEUP_SELFIE"),
+        ("Scenario 2: Group Selfie with Friends", samples["GROUP_SELFIE"], "ALLOWED_GROUP_SELFIE"),
+        ("Scenario 3: Nature Panorama / Landscape", samples["LANDSCAPE"], "BLOCKED_LANDSCAPE"),
+        ("Scenario 4: Electronic Object / Phone", samples["OBJECT_PHONE"], "BLOCKED_OBJECT"),
+        ("Scenario 5: Document with Text / ID Card", samples["DOCUMENT"], "BLOCKED_DOCUMENT"),
+        ("Scenario 6: Dark / Blurry / Damaged Photo", samples["BLURRY"], "BLOCKED_BLURRY"),
     ]
 
     total_tests = len(test_scenarios)
@@ -162,28 +162,28 @@ def run_selfie_demo():
         guardrail.engine.encode_image = orig_encode
 
         badge = format_status_badge(res.is_allowed)
-        print(f"  • Esito Guardrail:        {badge}")
-        print(f"  • Categoria Rilevata:     {res.category_label} (`{res.category_id}`)")
-        print(f"  • Livello Confidenza:     {res.confidence * 100:.2f}%")
-        print(f"  • Percorso di Routing:    {res.route_path} ({res.latency_ms:.2f} ms)")
+        print(f"  • Guardrail Outcome:      {badge}")
+        print(f"  • Detected Category:     {res.category_label} (`{res.category_id}`)")
+        print(f"  • Confidence Level:      {res.confidence * 100:.2f}%")
+        print(f"  • Routing Path:          {res.route_path} ({res.latency_ms:.2f} ms)")
 
         if res.is_allowed:
             correct_policy_actions += 1
-            print(f"  • Azione Sistema:         Accesso Consentito al profilo utente.")
+            print(f"  • System Action:         Access Approved for user profile.")
         else:
             correct_policy_actions += 1
-            print(f"  • Codice Rifiuto:         \033[93m{res.rejection_code}\033[0m")
-            print(f"  • Motivo del Blocco:      {res.rejection_reason}")
-            print(f"  • Istruzioni per Utente:  👉 {res.remediation_hint}")
+            print(f"  • Rejection Code:        \033[93m{res.rejection_code}\033[0m")
+            print(f"  • Rejection Reason:      {res.rejection_reason}")
+            print(f"  • Remediation Hint:      👉 {res.remediation_hint}")
         print()
 
     print("=" * 86)
-    print("  RIEPILOGO CONFORMITÀ POLICY GUARDRAIL")
+    print("  GUARDRAIL POLICY COMPLIANCE SUMMARY")
     print("=" * 86)
-    print(f"  • Scenari Testati:                {total_tests}")
-    print(f"  • Azioni Corrette di Policy:      {correct_policy_actions} / {total_tests} (100.0%)")
-    print(f"  • Tempo Medio di Decisione:       < 25 ms per immagine")
-    print(f"  • Consumo Token su Fast Path:     $0.00 (Zero token spesi)")
+    print(f"  • Scenarios Tested:                {total_tests}")
+    print(f"  • Correct Policy Actions:          {correct_policy_actions} / {total_tests} (100.0%)")
+    print(f"  • Average Decision Time:           < 25 ms per image")
+    print(f"  • Token Cost on Fast Path:         $0.00 (Zero tokens spent)")
     print("=" * 86 + "\n")
 
 
