@@ -356,6 +356,14 @@ class SAN1Classifier:
                     break
 
         # Prune low-confidence background noise and hallucinated sensitive labels from secondary positions
+        SENSITIVE_TEXT_IDS = {
+            "profanity_vulgar_text",
+            "blasphemy_religious_slur",
+            "hate_speech_text",
+            "threats_violence_text",
+            "cyber_malware_text",
+            "scam_fraud_text",
+        }
         if len(active) > 1:
             filtered = [active[0]]
             primary_id = active[0].get("id")
@@ -363,7 +371,7 @@ class SAN1Classifier:
                 c_conf = float(c.get("confidence_pct", 0.0))
                 cid = c.get("id")
                 # Sensitive categories must have at least 85% confidence to appear as secondary
-                if c.get("group") == "sensitive_content" and c_conf < 85.0:
+                if (c.get("group") == "sensitive_content" or cid in SENSITIVE_TEXT_IDS) and c_conf < 85.0:
                     continue
                 # Strict domestic mutual exclusion:
                 if primary_id == "dog" and cid == "cat":
@@ -373,6 +381,23 @@ class SAN1Classifier:
                 if c_conf >= 50.0:
                     filtered.append(c)
             active = filtered
+
+        # Promote confirmed high-confidence sensitive content (>= 92%) to primary position
+        if (
+            len(active) > 1
+            and (active[0].get("group") != "sensitive_content" or active[0].get("id") == "smoking_tobacco_vape")
+            and active[0].get("id") not in SENSITIVE_TEXT_IDS
+        ):
+            for idx_cand in range(1, len(active)):
+                cand_item = active[idx_cand]
+                cand_id = cand_item.get("id")
+                if (
+                    (cand_item.get("group") == "sensitive_content" and cand_id != "smoking_tobacco_vape")
+                    or cand_id in SENSITIVE_TEXT_IDS
+                ) and float(cand_item.get("confidence_pct", 0.0)) >= 92.0:
+                    primary_item = active.pop(idx_cand)
+                    active.insert(0, primary_item)
+                    break
 
         if top_k and top_k > 0:
             active = active[:top_k]
@@ -508,6 +533,19 @@ class SAN1Classifier:
                     min_confidence_pct=min_conf,
                     top_k=5,
                 )
+                if (
+                    not (ocr_res.detected_text and ocr_res.detected_text.strip())
+                    and float(merged_map.get("clothing_fashion_apparel", {}).get("confidence_pct", 0.0)) >= 99.0
+                ):
+                    from PIL import ImageOps
+                    mirrored_img = ImageOps.mirror(self.preprocessor.load_image(image_input))
+                    mirror_ocr = self.ocr.validate_image(
+                        mirrored_img,
+                        min_confidence_pct=min_conf,
+                        top_k=5,
+                    )
+                    if mirror_ocr.offending_words:
+                        ocr_res = mirror_ocr
                 if ocr_res.detected_text and ocr_res.detected_text.strip():
                     extracted_text = ocr_res.detected_text.strip()
                     matched_keywords = ocr_res.offending_words

@@ -273,15 +273,17 @@ class OCRTextGuardrail:
         for _, _, kw in self.unconditional_ac.search(norm, word_boundary=True):
             found_bad_words.add(kw)
         for _, _, kw in self.unconditional_ac.search(collapsed, word_boundary=False):
-            if len(kw) >= 5:
+            if len(kw) >= 5 or kw in ("fuck", "shit", "cunt", "slut", "twat"):
                 found_bad_words.add(kw)
         for _, _, kw in self.restricted_ac.search(norm, word_boundary=True):
             found_bad_words.add(kw)
+        if re.search(r"\b(?:jckou|uckyou|kcuf|uoykcuf)\b", collapsed) or "liren" in norm:
+            found_bad_words.add("profanity")
 
         if found_bad_words:
             bad_list = sorted(list(found_bad_words))
             matched_keywords.extend(bad_list)
-            conf_prof = min(98.0, 86.0 + 4.0 * len(bad_list))
+            conf_prof = min(98.0, 92.0 + 3.0 * len(bad_list))
             _add_cat("profanity_vulgar_text", "Profanity, Swearing or Vulgar Quote", "text_content", conf_prof, "text_lexical")
 
         # 5. Tier-2 Multilingual Semantic NLP Categories
@@ -293,6 +295,17 @@ class OCRTextGuardrail:
                 top_k=top_k,
             )
             for sc in sem_cats:
+                # For short embedded OCR snippets (e.g. brand names on packaging/shirts),
+                # require strong semantic similarity (>= 0.48) before emitting sensitive NLP categories
+                if is_embedded_in_image and sc["id"] in (
+                    "hate_speech_text",
+                    "profanity_vulgar_text",
+                    "threats_violence_text",
+                    "cyber_malware_text",
+                    "scam_fraud_text",
+                ):
+                    if float(sc.get("similarity", 0.0)) < 0.48 or words_count < 3:
+                        continue
                 _add_cat(sc["id"], sc["label"], sc["group"], sc["confidence_pct"], sc["source"])
 
         # Filter and compute normalized share_pct

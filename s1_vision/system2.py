@@ -206,6 +206,7 @@ class VLMReinspectionDeliberator(BaseDeliberator):
                     min_confidence_pct=min_conf,
                     top_k=top_k,
                     quadrant_weight=0.25,
+                    global_v=s1_result.latent_vector,
                 )
                 # Merge multicrop regional detections with S1 global detections
                 # so regional corner crops don't erase substantive central foreground subjects
@@ -232,6 +233,21 @@ class VLMReinspectionDeliberator(BaseDeliberator):
 
                     # Sort descending by confidence_pct
                     categories.sort(key=lambda x: float(x.get("confidence_pct", 0.0)), reverse=True)
+                    # Promote high-confidence sensitive content (>= 92%) to primary position
+                    if len(categories) > 1 and (
+                        categories[0].get("group") != "sensitive_content"
+                        or categories[0].get("id") == "smoking_tobacco_vape"
+                    ):
+                        for idx_c in range(1, len(categories)):
+                            c_cand = categories[idx_c]
+                            if (
+                                c_cand.get("group") == "sensitive_content"
+                                and c_cand.get("id") != "smoking_tobacco_vape"
+                                and float(c_cand.get("confidence_pct", 0.0)) >= 92.0
+                            ):
+                                p_item = categories.pop(idx_c)
+                                categories.insert(0, p_item)
+                                break
                     # Subject-over-Scene Prioritization on merged Deliberation set
                     AMBIENT_SCENE_IDS = {
                         "bedroom_interior",

@@ -979,7 +979,7 @@
       "prompts": [
         "an explicit adult photograph, erotic pornography, nudity, exposed bare breasts, nipples, buttocks, bare ass, genitals, vagina, penis, sex act, blowjob, sucking dick, oral sex, sexual intercourse, panties, upskirt, lingerie, suggestive sensual erotic pose, flashing tits in public, exhibitionist, woman peeing outdoors, urination, flashing genitals, hentai anime erotica, bdsm fetish, sex toy, masturbation"
       ],
-      "baseline_threshold": 0.235,
+      "baseline_threshold": 0.255,
       "contrast_anchors": [
         "benign_obj",
         "clean_selfie",
@@ -987,7 +987,7 @@
         "benign_scene",
         "benign_blur"
       ],
-      "contrast_margin": 0.002
+      "contrast_margin": 0.015
     },
     {
       "id": "suggestive_swimwear_lingerie",
@@ -999,13 +999,14 @@
         "a shirtless man showing bare chest torso or a woman in revealing swimwear at the beach or bedroom",
         "sensual glamour pose in lingerie or swimwear"
       ],
-      "baseline_threshold": 0.225,
+      "baseline_threshold": 0.232,
       "contrast_anchors": [
         "clean_selfie",
+        "benign_obj",
         "benign_doc",
         "benign_blur"
       ],
-      "contrast_margin": 0.005
+      "contrast_margin": 0.008
     },
     {
       "id": "offensive_gesture",
@@ -1018,13 +1019,15 @@
         "a drawing, sketch, vector icon or illustration of a hand showing the middle finger, flipping the bird drawing",
         "an icon or graphic drawing of an extended middle finger, offensive middle finger gesture"
       ],
-      "baseline_threshold": 0.2,
+      "baseline_threshold": 0.228,
       "contrast_anchors": [
         "clean_selfie",
+        "peace_pose",
+        "thumbs_up_pose",
         "benign_doc",
         "benign_blur"
       ],
-      "contrast_margin": 0.005
+      "contrast_margin": 0.008
     },
     {
       "id": "weapon_firearm_knife",
@@ -1070,7 +1073,7 @@
       "prompts": [
         "a photograph of illicit drugs, narcotics, smoking methamphetamine pipe, crack pipe, crystal meth, heroin injection needle syringe, smoking cannabis marijuana joint bong, snorting cocaine lines, ecstasy mdma party pills, lsd blotter tabs, drug paraphernalia, narcotics consumption, substance abuse"
       ],
-      "baseline_threshold": 0.23,
+      "baseline_threshold": 0.238,
       "contrast_anchors": [
         "benign_obj",
         "clean_selfie",
@@ -1078,7 +1081,7 @@
         "benign_scene",
         "benign_blur"
       ],
-      "contrast_margin": 0.002
+      "contrast_margin": 0.008
     },
     {
       "id": "smoking_tobacco_vape",

@@ -94,6 +94,7 @@ DESCRIPTIVE_TEXT_ANCHORS = {
         "phrases": [
             "fashion apparel clothing brand, casual t-shirt graphic logo, athletic sportswear brand, merchandise",
             "harmless product label, 100% cotton made in Italy, washing instructions, food recipe, grocery item",
+            "cosmetics skincare dermatology makeup brand, vichy dermablend foundation cream beauty product label",
             "marchio di abbigliamento, etichetta tessuto, cotone, made in italy, ricetta, indicazioni stradali",
         ],
     },

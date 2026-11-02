@@ -9,6 +9,7 @@ Implements the Two-Tower Contrastive Architecture with Multi-Prompt Ensembling &
 
 from typing import List, Dict, Any, Union, Optional
 from dataclasses import dataclass, field
+from pathlib import Path
 import time
 import numpy as np
 
@@ -122,6 +123,9 @@ class S1stemVisionEngine:
         self.benign_keys: List[str] = []
         self.benign_matrix: Optional[np.ndarray] = None
 
+        # Optional calibrated visual prototype & contrastive support bank
+        self.visual_cal: Optional[Dict[str, Any]] = None
+
         # ONNX Runtime Sessions setup
         self.session: Optional[Any] = None
         self.input_name: Optional[str] = None
@@ -137,6 +141,34 @@ class S1stemVisionEngine:
             self._init_session(self.model_path)
         if self.text_model_path and self.tokenizer_path:
             self._init_text_session(self.text_model_path, self.tokenizer_path)
+        self._load_visual_calibration()
+
+    def _load_visual_calibration(self) -> None:
+        """Loads pre-calibrated visual prototype support bank if available."""
+        cal_candidates = []
+        if self.model_path:
+            cal_candidates.append(Path(self.model_path).resolve().parent.parent / "visual_calibration.npz")
+        cal_candidates.append(Path(__file__).resolve().parent.parent / "models" / "clip" / "visual_calibration.npz")
+
+        for cp in cal_candidates:
+            if cp.exists():
+                try:
+                    data = np.load(cp, allow_pickle=True)
+                    protos = data["prototypes"].astype(np.float32)
+                    norms = np.linalg.norm(protos, axis=1, keepdims=True)
+                    protos = protos / np.where(norms < 1e-12, 1.0, norms)
+                    self.visual_cal = {
+                        "prototypes": protos,
+                        "category_ids": [str(x) for x in data["category_ids"]],
+                        "alphas": data["alphas"].astype(np.float32),
+                        "thresholds": data["thresholds"].astype(np.float32),
+                        "gamma": float(data.get("gamma", 6.5)),
+                        "lin_w": float(data.get("lin_w", 0.65)),
+                        "domain_min_sim": float(data.get("domain_min_sim", 0.62)),
+                    }
+                    break
+                except Exception:
+                    self.visual_cal = None
 
     def _init_session(self, model_path: str):
         if ort is None:
@@ -398,7 +430,7 @@ class S1stemVisionEngine:
                 if cand.id == "hate_extremist_symbol":
                     if s_i < 0.285 or (s_i - benign_ref) < 0.035:
                         passed_contrast = False
-                elif cand.id in ("explicit_nudity_pornography", "gore_corpses", "weapon_firearm_knife"):
+                elif cand.id in ("nudity_explicit", "explicit_nudity_pornography", "gore_corpses", "weapon_firearm_knife"):
                     if s_i < 0.280 or (s_i - benign_ref) < 0.030:
                         passed_contrast = False
                 elif top1_sim > 0.235:
@@ -448,6 +480,54 @@ class S1stemVisionEngine:
 
             confidences[i] = float(np.clip(raw_conf, 0.0, 99.9))
 
+        # Competitive suppression between benign and sensitive look-alikes
+        id_to_idx = {c.id: i for i, c in enumerate(cands)}
+        benign_gest_idx = id_to_idx.get("benign_gesture")
+        off_gest_idx = id_to_idx.get("offensive_gesture")
+        if benign_gest_idx is not None and off_gest_idx is not None:
+            if confidences[benign_gest_idx] >= 80.0 and confidences[benign_gest_idx] >= confidences[off_gest_idx]:
+                confidences[off_gest_idx] = 0.0
+
+        smoke_idx = id_to_idx.get("smoking_tobacco_vape")
+        drugs_idx = id_to_idx.get("illicit_drugs_narcotics")
+        if smoke_idx is not None and drugs_idx is not None:
+            if confidences[smoke_idx] >= 75.0 and confidences[smoke_idx] >= confidences[drugs_idx]:
+                confidences[drugs_idx] = 0.0
+
+        # Calibrated Visual Prototype & Contrastive Support Bank refinement
+        if (
+            not is_synthetic_exact
+            and self.visual_cal is not None
+            and v_s is not None
+            and len(v_s) == self.embedding_dim
+        ):
+            cos_p = np.dot(self.visual_cal["prototypes"], v_s)
+            max_proto_sim = float(np.max(cos_p))
+            if max_proto_sim >= float(self.visual_cal.get("domain_min_sim", 0.62)):
+                gamma = float(self.visual_cal.get("gamma", 6.5))
+                lin_w = float(self.visual_cal.get("lin_w", 0.65))
+                k_vec = np.exp(gamma * (cos_p - 1.0)) + lin_w * cos_p
+                cal_scores = np.dot(self.visual_cal["alphas"], k_vec)
+                cal_thrs = self.visual_cal["thresholds"]
+                cal_cids = self.visual_cal["category_ids"]
+
+                # In the calibrated portrait/selfie manifold, suppress uncalibrated sensitive noise
+                for idx_c, c_item in enumerate(cands):
+                    if c_item.group == "sensitive_content" and c_item.id != "smoking_tobacco_vape":
+                        confidences[idx_c] = 0.0
+
+                for j, cid in enumerate(cal_cids):
+                    c_idx = id_to_idx.get(cid)
+                    if c_idx is None:
+                        continue
+                    score_val = float(cal_scores[j])
+                    thr_val = float(cal_thrs[j])
+                    if score_val > thr_val:
+                        margin_above = score_val - thr_val
+                        confidences[c_idx] = float(np.clip(96.0 + 3.5 * margin_above, 95.0, 99.9))
+                    else:
+                        confidences[c_idx] = 0.0
+
         # Strict mutual exclusion for domestic pet species:
         dog_idx = next((i for i, c in enumerate(cands) if c.id == "dog"), None)
         cat_idx = next((i for i, c in enumerate(cands) if c.id == "cat"), None)
@@ -464,6 +544,22 @@ class S1stemVisionEngine:
         active_indices = [int(idx) for idx in sorted_indices if confidences[idx] >= min_confidence_pct]
         if not active_indices:
             active_indices = [int(sorted_indices[0])]
+
+        # Promote high-confidence sensitive content (>= 92%) to primary position
+        if len(active_indices) > 1 and (
+            cands[active_indices[0]].group != "sensitive_content"
+            or cands[active_indices[0]].id == "smoking_tobacco_vape"
+        ):
+            for pos in range(1, len(active_indices)):
+                sub_idx = active_indices[pos]
+                if (
+                    cands[sub_idx].group == "sensitive_content"
+                    and cands[sub_idx].id != "smoking_tobacco_vape"
+                    and confidences[sub_idx] >= 92.0
+                ):
+                    promoted = active_indices.pop(pos)
+                    active_indices.insert(0, promoted)
+                    break
 
         # Subject-over-Scene Prioritization:
         # If the highest-scoring category is a broad environmental scene (nature landscape or indoor room),
@@ -658,6 +754,7 @@ class S1stemVisionEngine:
         min_confidence_pct: float = 25.0,
         top_k: int = 10,
         quadrant_weight: float = 0.25,
+        global_v: Optional[np.ndarray] = None,
     ) -> S1DecisionResult:
         """
         Spatial Multi-Crop inference (Global + 4 Quadrants in a single batched ONNX call).
@@ -675,14 +772,13 @@ class S1stemVisionEngine:
             return self.predict(multicrop_tensors, min_confidence_pct=min_confidence_pct, top_k=top_k)
 
         t0 = time.perf_counter()
-        v_batch = self.encode_image_batch(multicrop_tensors)  # [C, dim]
-        sims_batch = np.dot(v_batch, self.action_matrix.T)     # [C, K]
-
-        global_v = v_batch[0]
-        global_sims = sims_batch[0]
+        if global_v is None:
+            global_v = self.encode_image(multicrop_tensors[0:1])
+        quad_batch = self.encode_image_batch(multicrop_tensors[1:])  # [C-1, dim]
+        global_sims = np.dot(self.action_matrix, global_v)           # [K]
+        quad_sims = np.dot(quad_batch, self.action_matrix.T)         # [C-1, K]
 
         # Regional fusion: combine global similarity with the strongest quadrant response
-        quad_sims = sims_batch[1:]
         best_quad_idx = np.argmax(quad_sims, axis=0)  # [K]
         max_quad_sims = np.max(quad_sims, axis=0)     # [K]
 
